@@ -1,0 +1,14 @@
+pref-title = ZoteroLM Settings
+pref-section-api = API Configuration
+pref-provider = LLM Provider
+pref-provider-gemini = Google Gemini
+pref-provider-openai = OpenAI
+pref-gemini-key = Gemini API Key
+pref-openai-key = OpenAI API Key
+pref-model = Default Model
+pref-section-context = Context Settings
+pref-max-tokens = Max Context Tokens
+pref-section-prompts = Prompt Settings
+pref-default-prompt = Default Prompt
+pref-create-prompts = Create Default Prompts
+pref-help = { $name } Build { $version } { $time }

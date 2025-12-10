@@ -1,0 +1,12 @@
+item-section-summary-head-text =
+    .label = LLM Summary
+item-section-summary-sidenav-tooltip =
+    .tooltiptext = View and manage LLM summaries
+item-section-summary-button-regenerate =
+    .tooltiptext = Regenerate summary
+item-section-summary-button-ask =
+    .tooltiptext = Ask a question
+sidebar-title = ZoteroLM Summaries
+sidebar-no-summaries = No summaries available
+sidebar-generate-btn = Generate Summary
+sidebar-ask-btn = Ask Question

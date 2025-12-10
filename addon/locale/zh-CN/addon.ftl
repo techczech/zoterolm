@@ -1,0 +1,10 @@
+startup-begin = ZoteroLM 正在加载
+startup-finish = ZoteroLM 已就绪
+menuitem-summarize = 使用LLM总结
+menuitem-ask-question = 询问关于项目的问题
+menupopup-label = ZoteroLM
+menuitem-summarize-collection = 总结合集
+menuitem-regenerate = 重新生成摘要
+prefs-title = ZoteroLM
+tabpanel-lib-tab-label = 摘要
+tabpanel-reader-tab-label = LLM摘要
