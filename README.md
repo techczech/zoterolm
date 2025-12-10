@@ -14,15 +14,10 @@ A Zotero 7 plugin that enables LLM-powered summarization of your library items u
 ## Supported Models
 
 ### Google Gemini
-- gemini-2.0-flash (1M context)
-- gemini-1.5-pro (2M context)
-- gemini-1.5-flash (1M context)
+- all models
 
 ### OpenAI
-- gpt-4o (128K context)
-- gpt-4o-mini (128K context)
-- gpt-4-turbo (128K context)
-- o1-preview (128K context)
+- all models
 
 ## Installation
 
