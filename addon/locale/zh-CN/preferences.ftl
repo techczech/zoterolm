@@ -1,0 +1,14 @@
+pref-title = ZoteroLM 设置
+pref-section-api = API配置
+pref-provider = LLM提供商
+pref-provider-gemini = Google Gemini
+pref-provider-openai = OpenAI
+pref-gemini-key = Gemini API密钥
+pref-openai-key = OpenAI API密钥
+pref-model = 默认模型
+pref-section-context = 上下文设置
+pref-max-tokens = 最大上下文令牌数
+pref-section-prompts = 提示词设置
+pref-default-prompt = 默认提示词
+pref-create-prompts = 创建默认提示词
+pref-help = { $name } 版本 { $version } { $time }

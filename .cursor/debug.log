@@ -1,0 +1,54 @@
+{"location":"actions.ts:37","message":"summarizeSelectedItems ENTRY","data":{},"timestamp":1765406708164,"sessionId":"debug-session","hypothesisId":"A"}
+{"location":"actions.ts:45","message":"selectedItems count","data":{"count":1},"timestamp":1765406708165,"sessionId":"debug-session","hypothesisId":"A"}
+{"location":"actions.ts:62","message":"dialog options","data":{"modelId":"gpt-4.1","promptId":"8931","contentType":"text"},"timestamp":1765406711755,"sessionId":"debug-session","hypothesisId":"C,D"}
+{"location":"actions.ts:70","message":"prompt lookup result","data":{"promptFound":true,"promptId":"8931","promptName":"Academic Summary"},"timestamp":1765406711757,"sessionId":"debug-session","hypothesisId":"D"}
+{"location":"actions.ts:90","message":"processing item","data":{"index":0,"itemId":8928,"itemTitle":"The Adoption and Usage of AI Agents: Early Evidence from Perplexity","isNote":false,"isAttachment":false},"timestamp":1765406711759,"sessionId":"debug-session","hypothesisId":"A"}
+{"location":"actions.ts:108","message":"hasPDF check","data":{"itemTitle":"The Adoption and Usage of AI Agents: Early Evidence from Perplexity","hasPdf":true},"timestamp":1765406711762,"sessionId":"debug-session","hypothesisId":"A"}
+{"location":"actions.ts:130","message":"before extractTextFromItem","data":{"itemId":8928,"itemTitle":"The Adoption and Usage of AI Agents: Early Evidence from Perplexity"},"timestamp":1765406711766,"sessionId":"debug-session","hypothesisId":"B"}
+{"location":"extractor.ts:208","message":"extractTextFromItem ENTRY","data":{"itemId":8928,"isAttachment":false},"timestamp":1765406711766,"sessionId":"debug-session","hypothesisId":"B"}
+{"location":"extractor.ts:215","message":"getFirstPDFAttachment result","data":{"attachmentFound":true,"attachmentId":8929,"attachmentContentType":"application/pdf"},"timestamp":1765406711766,"sessionId":"debug-session","hypothesisId":"B"}
+{"location":"extractor.ts:24","message":"extractTextFromPDF ENTRY","data":{"attachmentId":8929,"isAttachment":true},"timestamp":1765406711766,"sessionId":"debug-session","hypothesisId":"B"}
+{"location":"extractor.ts:78","message":"cache file check","data":{"hasCacheFile":true},"timestamp":1765406711766,"sessionId":"debug-session","hypothesisId":"B"}
+{"location":"extractor.ts:224","message":"before extractTextFromPDF","data":{"attachmentId":8929},"timestamp":1765406711766,"sessionId":"debug-session","hypothesisId":"B"}
+{"location":"extractor.ts:40","message":"trying extractUsingZoteroFullText","data":{"attachmentId":8929},"timestamp":1765406711766,"sessionId":"debug-session","hypothesisId":"B"}
+{"location":"extractor.ts:68","message":"extractUsingZoteroFullText ENTRY","data":{"attachmentId":8929},"timestamp":1765406711766,"sessionId":"debug-session","hypothesisId":"B"}
+{"location":"extractor.ts:87","message":"got cached content","data":{"contentLength":109846},"timestamp":1765406711786,"sessionId":"debug-session","hypothesisId":"B"}
+{"location":"extractor.ts:231","message":"extractTextFromPDF success","data":{"textLength":109846},"timestamp":1765406711786,"sessionId":"debug-session","hypothesisId":"B"}
+{"location":"actions.ts:138","message":"after extractTextFromItem","data":{"textLength":109846,"pageCount":37},"timestamp":1765406711786,"sessionId":"debug-session","hypothesisId":"B"}
+{"location":"actions.ts:150","message":"before callLLM","data":{"modelId":"gpt-4.1","contentType":"text","contentLength":109846,"hasPdfBase64":false},"timestamp":1765406711789,"sessionId":"debug-session","hypothesisId":"C"}
+{"location":"service.ts:58","message":"callLLM ENTRY","data":{"modelId":"gpt-4.1","contentType":"text","contentLength":109846,"hasPdfBase64":false},"timestamp":1765406711791,"sessionId":"debug-session","runId":"post-fix","hypothesisId":"LLM"}
+{"location":"service.ts:66","message":"model lookup","data":{"modelId":"gpt-4.1","modelFound":true,"modelName":"GPT-4.1","provider":"openai"},"timestamp":1765406711791,"sessionId":"debug-session","runId":"post-fix","hypothesisId":"LLM"}
+{"location":"service.ts:82","message":"about to call provider","data":{"provider":"openai","contentType":"text"},"timestamp":1765406711791,"sessionId":"debug-session","runId":"post-fix","hypothesisId":"LLM"}
+{"location":"openai.ts:170","message":"callOpenAI ENTRY","data":{"modelId":"gpt-4.1","promptLength":110329,"contentLength":109846},"timestamp":1765406711791,"sessionId":"debug-session","runId":"post-fix","hypothesisId":"LLM"}
+{"location":"openai.ts:195","message":"sending OpenAI request","data":{"model":"gpt-4.1","messageLength":220182},"timestamp":1765406711791,"sessionId":"debug-session","runId":"post-fix","hypothesisId":"LLM"}
+{"location":"openai.ts:208","message":"OpenAI response received","data":{"status":200,"ok":true},"timestamp":1765406742644,"sessionId":"debug-session","runId":"post-fix","hypothesisId":"LLM"}
+{"location":"openai.ts:235","message":"callOpenAI SUCCESS","data":{"responseLength":4768},"timestamp":1765406742651,"sessionId":"debug-session","runId":"post-fix","hypothesisId":"LLM"}
+{"location":"service.ts:108","message":"callLLM SUCCESS","data":{"responseLength":4768},"timestamp":1765406742651,"sessionId":"debug-session","runId":"post-fix","hypothesisId":"LLM"}
+{"location":"actions.ts:165","message":"after callLLM success","data":{"responseLength":4768,"modelId":"gpt-4.1"},"timestamp":1765406742651,"sessionId":"debug-session","hypothesisId":"C"}
+{"location":"actions.ts:37","message":"summarizeSelectedItems ENTRY","data":{},"timestamp":1765407037752,"sessionId":"debug-session","hypothesisId":"A"}
+{"location":"actions.ts:45","message":"selectedItems count","data":{"count":1},"timestamp":1765407037752,"sessionId":"debug-session","hypothesisId":"A"}
+{"location":"actions.ts:62","message":"dialog options","data":{"modelId":"","promptId":"8931","contentType":""},"timestamp":1765407052442,"sessionId":"debug-session","hypothesisId":"C,D"}
+{"location":"actions.ts:70","message":"prompt lookup result","data":{"promptFound":true,"promptId":"8931","promptName":"Academic Summary"},"timestamp":1765407052444,"sessionId":"debug-session","hypothesisId":"D"}
+{"location":"actions.ts:90","message":"processing item","data":{"index":0,"itemId":8907,"itemTitle":"Prompting Science Report 4: Playing Pretend: Expert Personas Don't Improve Factual Accuracy","isNote":false,"isAttachment":false},"timestamp":1765407052447,"sessionId":"debug-session","hypothesisId":"A"}
+{"location":"actions.ts:108","message":"hasPDF check","data":{"itemTitle":"Prompting Science Report 4: Playing Pretend: Expert Personas Don't Improve Factual Accuracy","hasPdf":true},"timestamp":1765407052450,"sessionId":"debug-session","hypothesisId":"A"}
+{"location":"actions.ts:130","message":"before extractTextFromItem","data":{"itemId":8907,"itemTitle":"Prompting Science Report 4: Playing Pretend: Expert Personas Don't Improve Factual Accuracy"},"timestamp":1765407052452,"sessionId":"debug-session","hypothesisId":"B"}
+{"location":"extractor.ts:208","message":"extractTextFromItem ENTRY","data":{"itemId":8907,"isAttachment":false},"timestamp":1765407052452,"sessionId":"debug-session","hypothesisId":"B"}
+{"location":"extractor.ts:215","message":"getFirstPDFAttachment result","data":{"attachmentFound":true,"attachmentId":8908,"attachmentContentType":"application/pdf"},"timestamp":1765407052453,"sessionId":"debug-session","hypothesisId":"B"}
+{"location":"extractor.ts:224","message":"before extractTextFromPDF","data":{"attachmentId":8908},"timestamp":1765407052453,"sessionId":"debug-session","hypothesisId":"B"}
+{"location":"extractor.ts:68","message":"extractUsingZoteroFullText ENTRY","data":{"attachmentId":8908},"timestamp":1765407052453,"sessionId":"debug-session","hypothesisId":"B"}
+{"location":"extractor.ts:24","message":"extractTextFromPDF ENTRY","data":{"attachmentId":8908,"isAttachment":true},"timestamp":1765407052453,"sessionId":"debug-session","hypothesisId":"B"}
+{"location":"extractor.ts:40","message":"trying extractUsingZoteroFullText","data":{"attachmentId":8908},"timestamp":1765407052453,"sessionId":"debug-session","hypothesisId":"B"}
+{"location":"extractor.ts:78","message":"cache file check","data":{"hasCacheFile":true},"timestamp":1765407052453,"sessionId":"debug-session","hypothesisId":"B"}
+{"location":"extractor.ts:87","message":"got cached content","data":{"contentLength":78005},"timestamp":1765407052470,"sessionId":"debug-session","hypothesisId":"B"}
+{"location":"extractor.ts:231","message":"extractTextFromPDF success","data":{"textLength":78005},"timestamp":1765407052470,"sessionId":"debug-session","hypothesisId":"B"}
+{"location":"actions.ts:138","message":"after extractTextFromItem","data":{"textLength":78005,"pageCount":27},"timestamp":1765407052470,"sessionId":"debug-session","hypothesisId":"B"}
+{"location":"actions.ts:150","message":"before callLLM","data":{"modelId":"","contentType":"","contentLength":78005,"hasPdfBase64":false},"timestamp":1765407052473,"sessionId":"debug-session","hypothesisId":"C"}
+{"location":"service.ts:58","message":"callLLM ENTRY","data":{"modelId":"","contentType":"","contentLength":78005,"hasPdfBase64":false},"timestamp":1765407052475,"sessionId":"debug-session","runId":"post-fix","hypothesisId":"LLM"}
+{"location":"service.ts:66","message":"model lookup","data":{"modelId":"gpt-4.1","modelFound":true,"modelName":"GPT-4.1","provider":"openai"},"timestamp":1765407052475,"sessionId":"debug-session","runId":"post-fix","hypothesisId":"LLM"}
+{"location":"service.ts:82","message":"about to call provider","data":{"provider":"openai","contentType":"text"},"timestamp":1765407052475,"sessionId":"debug-session","runId":"post-fix","hypothesisId":"LLM"}
+{"location":"openai.ts:170","message":"callOpenAI ENTRY","data":{"modelId":"gpt-4.1","promptLength":78488,"contentLength":78005},"timestamp":1765407052475,"sessionId":"debug-session","runId":"post-fix","hypothesisId":"LLM"}
+{"location":"openai.ts:195","message":"sending OpenAI request","data":{"model":"gpt-4.1","messageLength":156500},"timestamp":1765407052475,"sessionId":"debug-session","runId":"post-fix","hypothesisId":"LLM"}
+{"location":"openai.ts:208","message":"OpenAI response received","data":{"status":200,"ok":true},"timestamp":1765407087760,"sessionId":"debug-session","runId":"post-fix","hypothesisId":"LLM"}
+{"location":"openai.ts:235","message":"callOpenAI SUCCESS","data":{"responseLength":4892},"timestamp":1765407087765,"sessionId":"debug-session","runId":"post-fix","hypothesisId":"LLM"}
+{"location":"service.ts:108","message":"callLLM SUCCESS","data":{"responseLength":4892},"timestamp":1765407087766,"sessionId":"debug-session","runId":"post-fix","hypothesisId":"LLM"}
+{"location":"actions.ts:165","message":"after callLLM success","data":{"responseLength":4892,"modelId":"gpt-4.1"},"timestamp":1765407087766,"sessionId":"debug-session","hypothesisId":"C"}

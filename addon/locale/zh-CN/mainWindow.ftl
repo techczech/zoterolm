@@ -1,0 +1,12 @@
+item-section-summary-head-text =
+    .label = LLM摘要
+item-section-summary-sidenav-tooltip =
+    .tooltiptext = 查看和管理LLM摘要
+item-section-summary-button-regenerate =
+    .tooltiptext = 重新生成摘要
+item-section-summary-button-ask =
+    .tooltiptext = 提问
+sidebar-title = ZoteroLM 摘要
+sidebar-no-summaries = 暂无摘要
+sidebar-generate-btn = 生成摘要
+sidebar-ask-btn = 提问

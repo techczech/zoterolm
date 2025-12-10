@@ -1,0 +1,44 @@
+/* ZoteroLM styles */
+
+#zoterolm-summary-container {
+  padding: 8px;
+}
+
+#zoterolm-summary-content {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+#zoterolm-summary-actions {
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid #ddd;
+}
+
+#zoterolm-summary-actions button {
+  padding: 4px 12px;
+  cursor: pointer;
+}
+
+.zoterolm-summary-card {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+
+.zoterolm-summary-meta {
+  font-size: 0.85em;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.zoterolm-summary-text {
+  white-space: pre-wrap;
+  font-size: 0.95em;
+}
+
+/* Toolbar button */
+#zoterolm-toolbar-button {
+  list-style-image: url(chrome://zoterolm/content/icons/favicon@0.5x.png);
+}

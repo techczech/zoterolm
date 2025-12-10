@@ -1,0 +1,10 @@
+startup-begin = ZoteroLM is loading
+startup-finish = ZoteroLM is ready
+menuitem-summarize = Summarize with LLM
+menuitem-ask-question = Ask Question about Item
+menupopup-label = ZoteroLM
+menuitem-summarize-collection = Summarize Collection
+menuitem-regenerate = Regenerate Summary
+prefs-title = ZoteroLM
+tabpanel-lib-tab-label = Summaries
+tabpanel-reader-tab-label = LLM Summary
