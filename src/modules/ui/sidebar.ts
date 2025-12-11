@@ -3,6 +3,7 @@
  */
 
 import { getLocaleID, getString } from "../../utils/locale";
+import { escapeHtml } from "../../utils/html";
 import { getSummariesForItem, Summary } from "../summaries/manager";
 import { getProgressTracker, ProgressState } from "./progress";
 
@@ -290,29 +291,16 @@ function formatSummaryHtml(summary: Summary, index: number): string {
       <div style="white-space: pre-wrap; font-size: 0.95em;">
         ${escapeHtml(truncatedContent)}
       </div>
-      ${
-        summary.content.length > 500
-          ? `<div style="margin-top: 8px;">
+      ${summary.content.length > 500
+      ? `<div style="margin-top: 8px;">
               <a href="#" onclick="Zotero.ZoteroLM.hooks.onViewFullSummary(${summary.noteId}); return false;">
                 View full summary
               </a>
             </div>`
-          : ""
-      }
+      : ""
+    }
     </div>
   `;
-}
-
-/**
- * Escape HTML special characters
- */
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
 }
 
 /**

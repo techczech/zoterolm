@@ -131,13 +131,40 @@ export async function getPDFAsBase64(
 /**
  * Convert Uint8Array to base64 string
  */
-function uint8ArrayToBase64(bytes: Uint8Array): string {
-  let binary = "";
-  const len = bytes.byteLength;
-  for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i]);
+export function uint8ArrayToBase64(bytes: Uint8Array): string {
+  // Avoid building a massive intermediate string and calling btoa() on it.
+  // This implementation encodes directly from bytes.
+  const base64abc =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+  let result = "";
+  let i = 0;
+
+  for (; i + 2 < bytes.length; i += 3) {
+    const n = (bytes[i] << 16) | (bytes[i + 1] << 8) | bytes[i + 2];
+    result +=
+      base64abc[(n >> 18) & 63] +
+      base64abc[(n >> 12) & 63] +
+      base64abc[(n >> 6) & 63] +
+      base64abc[n & 63];
   }
-  return btoa(binary);
+
+  // Remaining 1 or 2 bytes + padding
+  const remaining = bytes.length - i;
+  if (remaining === 1) {
+    const n = bytes[i] << 16;
+    result +=
+      base64abc[(n >> 18) & 63] + base64abc[(n >> 12) & 63] + "==";
+  } else if (remaining === 2) {
+    const n = (bytes[i] << 16) | (bytes[i + 1] << 8);
+    result +=
+      base64abc[(n >> 18) & 63] +
+      base64abc[(n >> 12) & 63] +
+      base64abc[(n >> 6) & 63] +
+      "=";
+  }
+
+  return result;
 }
 
 /**
@@ -212,15 +239,75 @@ export async function extractTextFromItem(
 
   const text = await extractTextFromPDF(attachment);
 
+  // Extract annotations and append to text
+  const annotationsText = await extractAnnotationsText(attachment);
+  const fullText = annotationsText
+    ? `${text}\n\n--- User Annotations ---\n${annotationsText}`
+    : text;
+
   // Estimate page count from text length (rough approximation)
-  const estimatedPageCount = Math.max(1, Math.ceil(text.length / 3000));
+  const estimatedPageCount = Math.max(1, Math.ceil(fullText.length / 3000));
 
   return {
-    text,
+    text: fullText,
     pageCount: estimatedPageCount,
     itemId: item.isAttachment() ? item.parentItemID || item.id : item.id,
     attachmentId: attachment.id,
   };
+}
+
+/**
+ * Extract user annotations from a PDF attachment
+ */
+async function extractAnnotationsText(
+  attachment: Zotero.Item,
+): Promise<string | null> {
+  try {
+    const annotations = attachment.getAnnotations();
+    if (annotations.length === 0) return null;
+
+    const annotationTexts: string[] = [];
+
+    for (const annotation of annotations) {
+      const type = annotation.annotationType;
+      const text = annotation.annotationText || "";
+      const comment = annotation.annotationComment || "";
+      const pageLabel = annotation.annotationPageLabel || "";
+
+      let annotationEntry = `[Page ${pageLabel}] `;
+
+      switch (type) {
+        case "highlight":
+          annotationEntry += `Highlight: "${text}"`;
+          if (comment) annotationEntry += ` | Note: ${comment}`;
+          break;
+        case "note":
+          annotationEntry += `Note: ${comment}`;
+          break;
+        case "underline":
+          annotationEntry += `Underline: "${text}"`;
+          if (comment) annotationEntry += ` | Note: ${comment}`;
+          break;
+        case "text":
+          annotationEntry += `Text: "${text}"`;
+          if (comment) annotationEntry += ` | Note: ${comment}`;
+          break;
+        default:
+          if (text || comment) {
+            annotationEntry += `${text} ${comment}`.trim();
+          } else {
+            continue; // Skip empty annotations
+          }
+      }
+
+      annotationTexts.push(annotationEntry);
+    }
+
+    return annotationTexts.join("\n");
+  } catch (error) {
+    ztoolkit.log("Failed to extract annotations", error);
+    return null;
+  }
 }
 
 /**
