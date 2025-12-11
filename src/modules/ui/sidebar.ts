@@ -70,8 +70,10 @@ export function registerItemPaneSection(): void {
       }
 
       // Store reference to progress container
-      progressContainer = body.querySelector("#zoterolm-progress-panel") as HTMLElement;
-      
+      progressContainer = body.querySelector(
+        "#zoterolm-progress-panel",
+      ) as HTMLElement;
+
       // Subscribe to progress updates
       const tracker = getProgressTracker();
       progressUnsubscribe = tracker.subscribe((state) => {
@@ -97,7 +99,7 @@ export function registerItemPaneSection(): void {
       const contentDiv = body.querySelector(
         "#zoterolm-summary-content",
       ) as HTMLElement;
-      
+
       if (!contentDiv || !item) {
         setSectionSummary("No item selected");
         return;
@@ -110,7 +112,7 @@ export function registerItemPaneSection(): void {
       const contentDiv = body.querySelector(
         "#zoterolm-summary-content",
       ) as HTMLElement;
-      
+
       if (!contentDiv || !item) {
         return;
       }
@@ -176,11 +178,17 @@ export function registerItemPaneSection(): void {
  */
 function updateProgressPanel(body: HTMLElement, state: ProgressState): void {
   const panel = body.querySelector("#zoterolm-progress-panel") as HTMLElement;
-  const spinner = body.querySelector("#zoterolm-progress-spinner") as HTMLElement;
+  const spinner = body.querySelector(
+    "#zoterolm-progress-spinner",
+  ) as HTMLElement;
   const stage = body.querySelector("#zoterolm-progress-stage") as HTMLElement;
   const bar = body.querySelector("#zoterolm-progress-bar") as HTMLElement;
-  const message = body.querySelector("#zoterolm-progress-message") as HTMLElement;
-  const logContent = body.querySelector("#zoterolm-progress-log-content") as HTMLElement;
+  const message = body.querySelector(
+    "#zoterolm-progress-message",
+  ) as HTMLElement;
+  const logContent = body.querySelector(
+    "#zoterolm-progress-log-content",
+  ) as HTMLElement;
 
   if (!panel) return;
 
@@ -194,21 +202,30 @@ function updateProgressPanel(body: HTMLElement, state: ProgressState): void {
 
   // Update spinner visibility
   if (spinner) {
-    spinner.style.display = state.stage === "complete" || state.stage === "error" ? "none" : "block";
+    spinner.style.display =
+      state.stage === "complete" || state.stage === "error" ? "none" : "block";
   }
 
   // Update stage text
   if (stage) {
     stage.textContent = state.message;
-    stage.style.color = state.stage === "error" ? "#dc3545" : 
-                        state.stage === "complete" ? "#28a745" : "#333";
+    stage.style.color =
+      state.stage === "error"
+        ? "#dc3545"
+        : state.stage === "complete"
+          ? "#28a745"
+          : "#333";
   }
 
   // Update progress bar
   if (bar) {
     bar.style.width = `${state.progress}%`;
-    bar.style.background = state.stage === "error" ? "#dc3545" : 
-                           state.stage === "complete" ? "#28a745" : "#007bff";
+    bar.style.background =
+      state.stage === "error"
+        ? "#dc3545"
+        : state.stage === "complete"
+          ? "#28a745"
+          : "#007bff";
   }
 
   // Update message
@@ -249,7 +266,7 @@ export function hideProgressPanel(): void {
 function formatSummaryHtml(summary: Summary, index: number): string {
   const date = new Date(summary.metadata.date);
   const dateStr = date.toLocaleDateString() + " " + date.toLocaleTimeString();
-  
+
   const typeLabel =
     summary.metadata.type === "question"
       ? `Q: ${summary.metadata.question || "Question"}`

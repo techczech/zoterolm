@@ -28,7 +28,7 @@ export function fitSummariesInContext(
 ): FitResult {
   const model = modelId ? getModelById(modelId) : getCurrentModel();
   const maxContextTokens = getPref("maxContextTokens") as number;
-  
+
   // Use the smaller of model context window and user preference
   const effectiveMax = model
     ? Math.min(model.contextWindow, maxContextTokens)
@@ -48,7 +48,7 @@ export function fitSummariesInContext(
 
   for (const summary of sortedSummaries) {
     const summaryTokens = estimateTokenCount(summary.content);
-    
+
     if (totalTokens + summaryTokens <= availableTokens) {
       included.push(summary);
       totalTokens += summaryTokens;
@@ -112,13 +112,14 @@ export function calculateFitCapacity(
   modelId?: string,
 ): { canFit: number; total: number; percentage: number } {
   const result = fitSummariesInContext(summaries, promptText, modelId);
-  
+
   return {
     canFit: result.included.length,
     total: summaries.length,
-    percentage: summaries.length > 0
-      ? Math.round((result.included.length / summaries.length) * 100)
-      : 100,
+    percentage:
+      summaries.length > 0
+        ? Math.round((result.included.length / summaries.length) * 100)
+        : 100,
   };
 }
 
@@ -131,14 +132,14 @@ export function getFitPreview(
   modelId?: string,
 ): string {
   const result = fitSummariesInContext(summaries, promptText, modelId);
-  
+
   let preview = `Context Window Usage:\n`;
   preview += `- Prompt: ~${result.promptTokens} tokens\n`;
   preview += `- Summaries: ~${result.totalTokens} tokens\n`;
   preview += `- Available: ~${result.maxTokens} tokens\n\n`;
-  
+
   preview += `Including ${result.included.length} of ${summaries.length} summaries:\n`;
-  
+
   if (result.excluded.length > 0) {
     preview += `\nExcluded (${result.excluded.length}):\n`;
     for (const s of result.excluded) {
@@ -148,4 +149,3 @@ export function getFitPreview(
 
   return preview;
 }
-

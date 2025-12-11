@@ -86,10 +86,10 @@ export async function updateMenuStates(): Promise<void> {
   }
 
   const item = selectedItems[0];
-  
+
   // Check if item has PDF attachment
   const hasPdf = await hasPDFAttachment(item);
-  
+
   // Check if item already has a summary
   const hasExistingSummary = await hasSummary(item);
 
@@ -109,4 +109,3 @@ export async function updateMenuStates(): Promise<void> {
     (regenerateItem as XUL.MenuItem).disabled = !hasExistingSummary;
   }
 }
-

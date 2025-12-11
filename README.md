@@ -14,9 +14,11 @@ A Zotero 7 plugin that enables LLM-powered summarization of your library items u
 ## Supported Models
 
 ### Google Gemini
+
 - all models
 
 ### OpenAI
+
 - all models
 
 ## Installation

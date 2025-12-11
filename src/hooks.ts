@@ -3,9 +3,9 @@
  */
 
 import { getString, initLocale } from "./utils/locale";
-import { 
-  registerPrefsScripts, 
-  testGeminiConnection, 
+import {
+  registerPrefsScripts,
+  testGeminiConnection,
   testOpenAIConnection,
 } from "./modules/preferenceScript";
 import { createZToolkit } from "./utils/ztoolkit";
@@ -13,8 +13,14 @@ import {
   registerItemContextMenu,
   registerCollectionContextMenu,
 } from "./modules/ui/menu";
-import { registerToolbarButton, unregisterToolbarButton } from "./modules/ui/toolbar";
-import { registerItemPaneSection, unregisterItemPaneSection } from "./modules/ui/sidebar";
+import {
+  registerToolbarButton,
+  unregisterToolbarButton,
+} from "./modules/ui/toolbar";
+import {
+  registerItemPaneSection,
+  unregisterItemPaneSection,
+} from "./modules/ui/sidebar";
 import {
   summarizeSelectedItems,
   askQuestionAboutItem,

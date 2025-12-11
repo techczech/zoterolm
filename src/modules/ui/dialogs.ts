@@ -25,7 +25,6 @@ export interface QuestionOptions {
 // XUL namespace for native elements
 const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 
-
 /**
  * Helper to create a placeholder cell for a menulist
  */
@@ -57,27 +56,44 @@ function populateMenulist(
   }
 
   // Create custom dropdown (native select broken by Firefox's SelectParent in XUL context)
-  const wrapper = doc.createElementNS("http://www.w3.org/1999/xhtml", "div") as HTMLDivElement;
+  const wrapper = doc.createElementNS(
+    "http://www.w3.org/1999/xhtml",
+    "div",
+  ) as HTMLDivElement;
   wrapper.id = selectId;
   wrapper.style.cssText = "position:relative;width:100%;min-width:200px;";
   wrapper.dataset.value = selectedValue;
 
   // The visible button
-  const button = doc.createElementNS("http://www.w3.org/1999/xhtml", "div") as HTMLDivElement;
+  const button = doc.createElementNS(
+    "http://www.w3.org/1999/xhtml",
+    "div",
+  ) as HTMLDivElement;
   button.className = "custom-select-button";
-  button.style.cssText = "padding:6px 10px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;display:flex;justify-content:space-between;align-items:center;";
+  button.style.cssText =
+    "padding:6px 10px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;display:flex;justify-content:space-between;align-items:center;";
 
-  const selectedLabel = options.find(o => o.value === selectedValue)?.label || options[0]?.label || "";
+  const selectedLabel =
+    options.find((o) => o.value === selectedValue)?.label ||
+    options[0]?.label ||
+    "";
   button.innerHTML = `<span class="selected-text">${selectedLabel}</span><span style="margin-left:8px;">▼</span>`;
 
   // The dropdown list (hidden by default)
-  const dropdown = doc.createElementNS("http://www.w3.org/1999/xhtml", "div") as HTMLDivElement;
+  const dropdown = doc.createElementNS(
+    "http://www.w3.org/1999/xhtml",
+    "div",
+  ) as HTMLDivElement;
   dropdown.className = "custom-select-dropdown";
-  dropdown.style.cssText = "display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #ccc;border-radius:4px;max-height:200px;overflow-y:auto;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,0.15);";
+  dropdown.style.cssText =
+    "display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #ccc;border-radius:4px;max-height:200px;overflow-y:auto;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,0.15);";
 
   // Add options
   for (const opt of options) {
-    const item = doc.createElementNS("http://www.w3.org/1999/xhtml", "div") as HTMLDivElement;
+    const item = doc.createElementNS(
+      "http://www.w3.org/1999/xhtml",
+      "div",
+    ) as HTMLDivElement;
     item.className = "custom-select-option";
     item.dataset.value = opt.value;
     item.textContent = opt.label;
@@ -87,9 +103,12 @@ function populateMenulist(
     }
 
     // Hover effect
-    item.addEventListener("mouseenter", () => { item.style.background = "#f0f0f0"; });
+    item.addEventListener("mouseenter", () => {
+      item.style.background = "#f0f0f0";
+    });
     item.addEventListener("mouseleave", () => {
-      item.style.background = item.dataset.value === wrapper.dataset.value ? "#e3f2fd" : "#fff";
+      item.style.background =
+        item.dataset.value === wrapper.dataset.value ? "#e3f2fd" : "#fff";
     });
 
     // Selection
@@ -101,7 +120,8 @@ function populateMenulist(
       dropdown.style.display = "none";
       // Update highlight
       dropdown.querySelectorAll(".custom-select-option").forEach((el: any) => {
-        el.style.background = el.dataset.value === opt.value ? "#e3f2fd" : "#fff";
+        el.style.background =
+          el.dataset.value === opt.value ? "#e3f2fd" : "#fff";
       });
     });
 
@@ -135,7 +155,10 @@ export async function showSummarizeDialog(): Promise<SummarizeOptions | null> {
   const currentPromptId = getPref("defaultPromptId") as string;
 
   if (models.length === 0) {
-    showError("ZoteroLM", "No models available. Please test your API connection in settings.");
+    showError(
+      "ZoteroLM",
+      "No models available. Please test your API connection in settings.",
+    );
     return null;
   }
 
@@ -155,7 +178,7 @@ export async function showSummarizeDialog(): Promise<SummarizeOptions | null> {
   ];
 
   const initialModelId = currentModel || models[0].id;
-  const initialPromptId = currentPromptId || (prompts[0]?.id || "");
+  const initialPromptId = currentPromptId || prompts[0]?.id || "";
   const initialContentType = "text";
 
   const dialogData: { [key: string]: any } = {
@@ -169,12 +192,19 @@ export async function showSummarizeDialog(): Promise<SummarizeOptions | null> {
 
       // Read values from custom dropdowns before dialog closes
       const modelSelect = doc.getElementById("model-select") as HTMLDivElement;
-      const promptSelect = doc.getElementById("prompt-select") as HTMLDivElement;
-      const contentSelect = doc.getElementById("content-select") as HTMLDivElement;
+      const promptSelect = doc.getElementById(
+        "prompt-select",
+      ) as HTMLDivElement;
+      const contentSelect = doc.getElementById(
+        "content-select",
+      ) as HTMLDivElement;
 
-      if (modelSelect?.dataset.value) dialogData.modelId = modelSelect.dataset.value;
-      if (promptSelect?.dataset.value) dialogData.promptId = promptSelect.dataset.value;
-      if (contentSelect?.dataset.value) dialogData.contentType = contentSelect.dataset.value;
+      if (modelSelect?.dataset.value)
+        dialogData.modelId = modelSelect.dataset.value;
+      if (promptSelect?.dataset.value)
+        dialogData.promptId = promptSelect.dataset.value;
+      if (contentSelect?.dataset.value)
+        dialogData.contentType = contentSelect.dataset.value;
     },
   };
 
@@ -205,8 +235,7 @@ export async function showSummarizeDialog(): Promise<SummarizeOptions | null> {
       tag: "p",
       styles: { fontSize: "0.85em", color: "#666" },
       properties: {
-        innerHTML:
-          "📄 = supports PDF input. Check sidebar for progress.",
+        innerHTML: "📄 = supports PDF input. Check sidebar for progress.",
       },
     })
     .addButton("Summarize", "confirm", {
@@ -222,9 +251,27 @@ export async function showSummarizeDialog(): Promise<SummarizeOptions | null> {
   setTimeout(() => {
     const doc = dialogHelper.window?.document;
     if (doc) {
-      populateMenulist(doc, "model-container", "model-select", modelOptions, initialModelId);
-      populateMenulist(doc, "prompt-container", "prompt-select", promptOptions, initialPromptId);
-      populateMenulist(doc, "content-container", "content-select", contentOptions, initialContentType);
+      populateMenulist(
+        doc,
+        "model-container",
+        "model-select",
+        modelOptions,
+        initialModelId,
+      );
+      populateMenulist(
+        doc,
+        "prompt-container",
+        "prompt-select",
+        promptOptions,
+        initialPromptId,
+      );
+      populateMenulist(
+        doc,
+        "content-container",
+        "content-select",
+        contentOptions,
+        initialContentType,
+      );
     }
   }, 50);
 
@@ -238,7 +285,10 @@ export async function showSummarizeDialog(): Promise<SummarizeOptions | null> {
   if (dialogData.contentType === "pdf") {
     const model = models.find((m) => m.id === dialogData.modelId);
     if (model && !model.supportsVision) {
-      showError("ZoteroLM", `Model "${model.name}" does not support PDF input. Please use text extraction or choose a vision model.`);
+      showError(
+        "ZoteroLM",
+        `Model "${model.name}" does not support PDF input. Please use text extraction or choose a vision model.`,
+      );
       return null;
     }
   }
@@ -258,7 +308,10 @@ export async function showQuestionDialog(): Promise<QuestionOptions | null> {
   const currentModel = getPref("defaultModel") as string;
 
   if (models.length === 0) {
-    showError("ZoteroLM", "No models available. Please test your API connection in settings.");
+    showError(
+      "ZoteroLM",
+      "No models available. Please test your API connection in settings.",
+    );
     return null;
   }
 
@@ -285,10 +338,14 @@ export async function showQuestionDialog(): Promise<QuestionOptions | null> {
       if (!doc) return;
 
       const modelSelect = doc.getElementById("model-select") as HTMLDivElement;
-      const contentSelect = doc.getElementById("content-select") as HTMLDivElement;
+      const contentSelect = doc.getElementById(
+        "content-select",
+      ) as HTMLDivElement;
 
-      if (modelSelect?.dataset.value) dialogData.modelId = modelSelect.dataset.value;
-      if (contentSelect?.dataset.value) dialogData.contentType = contentSelect.dataset.value;
+      if (modelSelect?.dataset.value)
+        dialogData.modelId = modelSelect.dataset.value;
+      if (contentSelect?.dataset.value)
+        dialogData.contentType = contentSelect.dataset.value;
     },
   };
 
@@ -342,8 +399,20 @@ export async function showQuestionDialog(): Promise<QuestionOptions | null> {
   setTimeout(() => {
     const doc = dialogHelper.window?.document;
     if (doc) {
-      populateMenulist(doc, "model-container", "model-select", modelOptions, initialModelId);
-      populateMenulist(doc, "content-container", "content-select", contentOptions, initialContentType);
+      populateMenulist(
+        doc,
+        "model-container",
+        "model-select",
+        modelOptions,
+        initialModelId,
+      );
+      populateMenulist(
+        doc,
+        "content-container",
+        "content-select",
+        contentOptions,
+        initialContentType,
+      );
     }
   }, 50);
 
@@ -382,7 +451,7 @@ export function showProgressWindow(
   });
 
   // Create the line and store reference via closure
-  let lineRef: ReturnType<typeof win.createLine> | null = null;
+  const lineRef: ReturnType<typeof win.createLine> | null = null;
 
   win.createLine({
     text: message,
@@ -467,13 +536,14 @@ export async function showCollectionSummaryDialog(
   const currentModel = getPref("defaultModel") as string;
 
   // Find the meta-summary prompt
-  const metaPrompt = prompts.find((p) =>
-    p.name.toLowerCase().includes("meta"),
-  );
+  const metaPrompt = prompts.find((p) => p.name.toLowerCase().includes("meta"));
   const defaultPromptId = metaPrompt?.id || prompts[0]?.id || "";
 
   if (models.length === 0) {
-    showError("ZoteroLM", "No models available. Please test your API connection in settings.");
+    showError(
+      "ZoteroLM",
+      "No models available. Please test your API connection in settings.",
+    );
     return null;
   }
 
@@ -496,10 +566,14 @@ export async function showCollectionSummaryDialog(
       if (!doc) return;
 
       const modelSelect = doc.getElementById("model-select") as HTMLDivElement;
-      const promptSelect = doc.getElementById("prompt-select") as HTMLDivElement;
+      const promptSelect = doc.getElementById(
+        "prompt-select",
+      ) as HTMLDivElement;
 
-      if (modelSelect?.dataset.value) dialogData.modelId = modelSelect.dataset.value;
-      if (promptSelect?.dataset.value) dialogData.promptId = promptSelect.dataset.value;
+      if (modelSelect?.dataset.value)
+        dialogData.modelId = modelSelect.dataset.value;
+      if (promptSelect?.dataset.value)
+        dialogData.promptId = promptSelect.dataset.value;
     },
   };
 
@@ -548,8 +622,20 @@ export async function showCollectionSummaryDialog(
   setTimeout(() => {
     const doc = dialogHelper.window?.document;
     if (doc) {
-      populateMenulist(doc, "model-container", "model-select", modelOptions, initialModelId);
-      populateMenulist(doc, "prompt-container", "prompt-select", promptOptions, initialPromptId);
+      populateMenulist(
+        doc,
+        "model-container",
+        "model-select",
+        modelOptions,
+        initialModelId,
+      );
+      populateMenulist(
+        doc,
+        "prompt-container",
+        "prompt-select",
+        promptOptions,
+        initialPromptId,
+      );
     }
   }, 50);
 

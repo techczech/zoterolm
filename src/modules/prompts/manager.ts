@@ -178,12 +178,12 @@ export async function createPrompt(
   content: string,
 ): Promise<PromptTemplate> {
   const note = new Zotero.Item("note");
-  
+
   // Format as HTML note
   const htmlContent = `<div><strong>${escapeHtml(name)}</strong></div>
 <div><br></div>
 <div>${escapeHtml(content).replace(/\n/g, "</div><div>")}</div>`;
-  
+
   note.setNote(htmlContent);
   await note.saveTx();
 
@@ -204,7 +204,7 @@ export async function createPrompt(
  */
 export async function createDefaultPrompts(): Promise<void> {
   const existing = await getAllPrompts();
-  
+
   if (existing.length > 0) {
     ztoolkit.log("Prompts already exist, skipping default creation");
     return;
@@ -215,7 +215,10 @@ export async function createDefaultPrompts(): Promise<void> {
   let firstPromptId: string | null = null;
 
   for (const defaultPrompt of DEFAULT_PROMPTS) {
-    const prompt = await createPrompt(defaultPrompt.name, defaultPrompt.content);
+    const prompt = await createPrompt(
+      defaultPrompt.name,
+      defaultPrompt.content,
+    );
     if (!firstPromptId) {
       firstPromptId = prompt.id;
     }
@@ -258,4 +261,3 @@ function escapeHtml(text: string): string {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
-

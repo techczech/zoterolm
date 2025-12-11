@@ -37,11 +37,13 @@ export async function testGeminiConnection(win: Window): Promise<void> {
   const apiKey = keyInput.value || (getPref("geminiApiKey") as string);
 
   if (!apiKey) {
-    statusDiv.innerHTML = '<span style="color: red;">Please enter an API key first.</span>';
+    statusDiv.innerHTML =
+      '<span style="color: red;">Please enter an API key first.</span>';
     return;
   }
 
-  statusDiv.innerHTML = '<span style="color: blue;">Testing connection...</span>';
+  statusDiv.innerHTML =
+    '<span style="color: blue;">Testing connection...</span>';
 
   try {
     const result = await testConnection("gemini", apiKey);
@@ -75,11 +77,13 @@ export async function testOpenAIConnection(win: Window): Promise<void> {
   const apiKey = keyInput.value || (getPref("openaiApiKey") as string);
 
   if (!apiKey) {
-    statusDiv.innerHTML = '<span style="color: red;">Please enter an API key first.</span>';
+    statusDiv.innerHTML =
+      '<span style="color: red;">Please enter an API key first.</span>';
     return;
   }
 
-  statusDiv.innerHTML = '<span style="color: blue;">Testing connection...</span>';
+  statusDiv.innerHTML =
+    '<span style="color: blue;">Testing connection...</span>';
 
   try {
     const result = await testConnection("openai", apiKey);
@@ -125,7 +129,10 @@ function populateModelUI(win: Window): void {
         "menuitem",
       );
       const visionIcon = model.supportsVision ? " 📄" : "";
-      item.setAttribute("label", `${model.name} (${model.provider})${visionIcon}`);
+      item.setAttribute(
+        "label",
+        `${model.name} (${model.provider})${visionIcon}`,
+      );
       item.setAttribute("value", model.id);
       modelPopup.appendChild(item);
     }
@@ -156,7 +163,8 @@ function populateModelUI(win: Window): void {
     modelList.innerHTML = "";
 
     if (allModels.length === 0) {
-      modelList.innerHTML = '<html:em>No models loaded. Test your API connection above.</html:em>';
+      modelList.innerHTML =
+        "<html:em>No models loaded. Test your API connection above.</html:em>";
       return;
     }
 
@@ -166,7 +174,10 @@ function populateModelUI(win: Window): void {
 
     // Add Gemini models
     if (geminiModels.length > 0) {
-      const geminiHeader = doc.createElementNS("http://www.w3.org/1999/xhtml", "h4") as HTMLHeadingElement;
+      const geminiHeader = doc.createElementNS(
+        "http://www.w3.org/1999/xhtml",
+        "h4",
+      ) as HTMLHeadingElement;
       geminiHeader.textContent = "Google Gemini";
       geminiHeader.style.margin = "8px 0 4px 0";
       modelList.appendChild(geminiHeader);
@@ -178,7 +189,10 @@ function populateModelUI(win: Window): void {
 
     // Add OpenAI models
     if (openaiModels.length > 0) {
-      const openaiHeader = doc.createElementNS("http://www.w3.org/1999/xhtml", "h4") as HTMLHeadingElement;
+      const openaiHeader = doc.createElementNS(
+        "http://www.w3.org/1999/xhtml",
+        "h4",
+      ) as HTMLHeadingElement;
       openaiHeader.textContent = "OpenAI";
       openaiHeader.style.margin = "12px 0 4px 0";
       modelList.appendChild(openaiHeader);
@@ -198,10 +212,17 @@ function createModelCheckbox(
   model: ModelInfo,
   enabledIds: string[],
 ): HTMLElement {
-  const container = doc.createElementNS("http://www.w3.org/1999/xhtml", "div") as HTMLDivElement;
-  container.style.cssText = "display: flex; align-items: center; padding: 2px 0;";
+  const container = doc.createElementNS(
+    "http://www.w3.org/1999/xhtml",
+    "div",
+  ) as HTMLDivElement;
+  container.style.cssText =
+    "display: flex; align-items: center; padding: 2px 0;";
 
-  const checkbox = doc.createElementNS("http://www.w3.org/1999/xhtml", "input") as HTMLInputElement;
+  const checkbox = doc.createElementNS(
+    "http://www.w3.org/1999/xhtml",
+    "input",
+  ) as HTMLInputElement;
   checkbox.setAttribute("type", "checkbox");
   checkbox.setAttribute("id", `model-${model.id}`);
   // If no models are explicitly enabled, all are enabled by default
@@ -215,7 +236,10 @@ function createModelCheckbox(
     updateEnabledModels(doc);
   });
 
-  const label = doc.createElementNS("http://www.w3.org/1999/xhtml", "label") as HTMLLabelElement;
+  const label = doc.createElementNS(
+    "http://www.w3.org/1999/xhtml",
+    "label",
+  ) as HTMLLabelElement;
   label.setAttribute("for", `model-${model.id}`);
   const visionIcon = model.supportsVision ? " 📄" : "";
   const contextInfo = `${Math.round(model.contextWindow / 1000)}K context`;
@@ -236,7 +260,9 @@ function updateEnabledModels(doc: Document): void {
   const enabledIds: string[] = [];
 
   for (const model of allModels) {
-    const checkbox = doc.getElementById(`model-${model.id}`) as HTMLInputElement;
+    const checkbox = doc.getElementById(
+      `model-${model.id}`,
+    ) as HTMLInputElement;
     if (checkbox && checkbox.checked) {
       enabledIds.push(model.id);
     }
@@ -274,7 +300,10 @@ async function populatePromptDropdown(win: Window): Promise<void> {
       "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul",
       "menuitem",
     );
-    noPromptsItem.setAttribute("label", "No prompts - click Create Default Prompts");
+    noPromptsItem.setAttribute(
+      "label",
+      "No prompts - click Create Default Prompts",
+    );
     noPromptsItem.setAttribute("disabled", "true");
     promptPopup.appendChild(noPromptsItem);
   } else {

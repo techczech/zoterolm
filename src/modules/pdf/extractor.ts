@@ -53,8 +53,8 @@ async function extractUsingZoteroFullText(
 ): Promise<string> {
   // Try to get the cached full-text content file
   const cacheFile = Zotero.Fulltext.getItemCacheFile(attachment);
-  
-  if (cacheFile && await cacheFile.exists()) {
+
+  if (cacheFile && (await cacheFile.exists())) {
     const content = await Zotero.File.getContentsAsync(cacheFile);
     if (content && String(content).trim().length > 0) {
       return String(content);
@@ -63,10 +63,10 @@ async function extractUsingZoteroFullText(
 
   // Not indexed yet - trigger indexing
   await Zotero.Fulltext.indexItems([attachment.id], { complete: true });
-  
+
   // Try again after indexing
   const newCacheFile = Zotero.Fulltext.getItemCacheFile(attachment);
-  if (newCacheFile && await newCacheFile.exists()) {
+  if (newCacheFile && (await newCacheFile.exists())) {
     const content = await Zotero.File.getContentsAsync(newCacheFile);
     if (content && String(content).trim().length > 0) {
       return String(content);
@@ -83,7 +83,7 @@ async function extractUsingZoteroFullText(
 async function extractUsingPDFWorker(attachmentId: number): Promise<string> {
   // Use Zotero's PDF worker to extract text - it expects the attachment item ID
   const result = await Zotero.PDFWorker.getFullText(attachmentId);
-  
+
   if (!result || !result.text) {
     throw new Error("PDF worker could not extract text");
   }
@@ -113,13 +113,13 @@ export async function getPDFAsBase64(
 
   // Read the PDF file as bytes
   const data = await IOUtils.read(path);
-  
+
   // Convert to base64
   const base64 = uint8ArrayToBase64(data);
-  
+
   // Get file info
   const fileName = attachment.attachmentFilename || "document.pdf";
-  
+
   return {
     base64,
     mimeType: "application/pdf",
@@ -149,15 +149,15 @@ export function textToHtml(text: string, title?: string): string {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
-  
+
   // Convert paragraphs (double newlines)
   const withParagraphs = escaped
     .split(/\n\n+/)
     .map((p) => `<p>${p.replace(/\n/g, "<br>")}</p>`)
     .join("\n");
-  
+
   const titleHtml = title ? `<h1>${title}</h1>\n` : "";
-  
+
   return `<!DOCTYPE html>
 <html>
 <head>
@@ -205,20 +205,20 @@ export async function extractTextFromItem(
   item: Zotero.Item,
 ): Promise<ExtractionResult> {
   const attachment = await getFirstPDFAttachment(item);
-  
+
   if (!attachment) {
     throw new Error("No PDF attachment found for this item");
   }
 
   const text = await extractTextFromPDF(attachment);
-  
+
   // Estimate page count from text length (rough approximation)
   const estimatedPageCount = Math.max(1, Math.ceil(text.length / 3000));
 
   return {
     text,
     pageCount: estimatedPageCount,
-    itemId: item.isAttachment() ? (item.parentItemID || item.id) : item.id,
+    itemId: item.isAttachment() ? item.parentItemID || item.id : item.id,
     attachmentId: attachment.id,
   };
 }
@@ -226,11 +226,9 @@ export async function extractTextFromItem(
 /**
  * Get PDF data from an item (finds PDF attachment automatically)
  */
-export async function getPDFDataFromItem(
-  item: Zotero.Item,
-): Promise<PDFData> {
+export async function getPDFDataFromItem(item: Zotero.Item): Promise<PDFData> {
   const attachment = await getFirstPDFAttachment(item);
-  
+
   if (!attachment) {
     throw new Error("No PDF attachment found for this item");
   }

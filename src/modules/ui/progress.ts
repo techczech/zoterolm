@@ -2,7 +2,7 @@
  * Progress and status tracking for LLM operations
  */
 
-export type ProgressStage = 
+export type ProgressStage =
   | "idle"
   | "preparing"
   | "extracting"
@@ -122,11 +122,11 @@ export class ProgressTracker {
     this.state.stage = stage;
     this.state.progress = STAGE_PROGRESS[stage];
     this.state.message = customMessage || STAGE_DESCRIPTIONS[stage];
-    
+
     if (stage === "complete") {
       this.state.endTime = Date.now();
     }
-    
+
     this.log("info", this.state.message);
     this.notify();
   }
@@ -199,9 +199,14 @@ export class ProgressTracker {
     return this.state.logs
       .map((log) => {
         const time = new Date(log.timestamp).toLocaleTimeString();
-        const prefix = log.level === "error" ? "❌" : 
-                      log.level === "warn" ? "⚠️" : 
-                      log.level === "debug" ? "🔍" : "ℹ️";
+        const prefix =
+          log.level === "error"
+            ? "❌"
+            : log.level === "warn"
+              ? "⚠️"
+              : log.level === "debug"
+                ? "🔍"
+                : "ℹ️";
         let text = `[${time}] ${prefix} ${log.message}`;
         if (log.details) {
           text += `\n    ${log.details}`;
@@ -231,7 +236,3 @@ export function getProgressTracker(): ProgressTracker {
 export function createProgressTracker(): ProgressTracker {
   return new ProgressTracker();
 }
-
-
-
-
