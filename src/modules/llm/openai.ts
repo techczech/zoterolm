@@ -79,7 +79,7 @@ export async function testOpenAIConnection(apiKey: string): Promise<{
 
   try {
     const url = "https://api.openai.com/v1/models";
-    
+
     const response = await fetch(url, {
       method: "GET",
       headers: {
@@ -96,10 +96,10 @@ export async function testOpenAIConnection(apiKey: string): Promise<{
     }
 
     const data = (await response.json()) as unknown as OpenAIModelListResponse;
-    
+
     // Filter and transform models - only include chat models
     const chatModelPrefixes = ["gpt-4", "gpt-3.5", "o1"];
-    
+
     const models: ModelInfo[] = data.data
       .filter((m) => {
         // Only include chat-capable models
@@ -110,20 +110,30 @@ export async function testOpenAIConnection(apiKey: string): Promise<{
         return !m.id.includes(":") && !m.id.includes("instruct");
       })
       .map((m) => {
-        const contextWindow = OPENAI_CONTEXT_WINDOWS[m.id] || 
-          (m.id.includes("32k") ? 32768 : 
-           m.id.includes("16k") ? 16385 : 
-           m.id.includes("gpt-4") ? 8192 : 4096);
-        
-        const supportsVision = OPENAI_VISION_MODELS.some((v) => m.id.includes(v));
-        
+        const contextWindow =
+          OPENAI_CONTEXT_WINDOWS[m.id] ||
+          (m.id.includes("32k")
+            ? 32768
+            : m.id.includes("16k")
+              ? 16385
+              : m.id.includes("gpt-4")
+                ? 8192
+                : 4096);
+
+        const supportsVision = OPENAI_VISION_MODELS.some((v) =>
+          m.id.includes(v),
+        );
+
         return {
           id: m.id,
           name: formatOpenAIModelName(m.id),
           provider: "openai" as const,
           contextWindow,
-          outputTokens: m.id.includes("o1") ? 32768 : 
-                       m.id.includes("gpt-4o") ? 16384 : 4096,
+          outputTokens: m.id.includes("o1")
+            ? 32768
+            : m.id.includes("gpt-4o")
+              ? 16384
+              : 4096,
           supportsVision,
         };
       })
@@ -175,7 +185,9 @@ export async function callOpenAI(
   const apiKey = getPref("openaiApiKey") as string;
 
   if (!apiKey) {
-    throw new Error("OpenAI API key not configured. Please set it in preferences.");
+    throw new Error(
+      "OpenAI API key not configured. Please set it in preferences.",
+    );
   }
 
   const url = "https://api.openai.com/v1/chat/completions";
@@ -236,7 +248,9 @@ export async function callOpenAIWithImage(
   const apiKey = getPref("openaiApiKey") as string;
 
   if (!apiKey) {
-    throw new Error("OpenAI API key not configured. Please set it in preferences.");
+    throw new Error(
+      "OpenAI API key not configured. Please set it in preferences.",
+    );
   }
 
   const url = "https://api.openai.com/v1/chat/completions";

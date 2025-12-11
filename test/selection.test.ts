@@ -17,5 +17,3 @@ describe("resolveSelection", function () {
     assert.deepEqual(result, { resolved: "", changed: false });
   });
 });
-
-

@@ -4,11 +4,15 @@
 
 import { getPref } from "../../utils/prefs";
 import { callGemini, callGeminiWithPDF, testGeminiConnection } from "./gemini";
-import { callOpenAI, callOpenAIWithImage, testOpenAIConnection } from "./openai";
-import { 
-  getModelById, 
+import {
+  callOpenAI,
+  callOpenAIWithImage,
+  testOpenAIConnection,
+} from "./openai";
+import {
+  getModelById,
   getEnabledModels,
-  LLMProvider, 
+  LLMProvider,
   ModelInfo,
   modelSupportsVision,
 } from "./models";
@@ -60,7 +64,9 @@ export async function callLLM(request: LLMRequest): Promise<LLMResponse> {
   const model = getModelById(modelId);
 
   if (!model) {
-    throw new Error(`Unknown model: ${modelId}. Please refresh models in settings.`);
+    throw new Error(
+      `Unknown model: ${modelId}. Please refresh models in settings.`,
+    );
   }
 
   const contentType = request.contentType || "text";
@@ -68,13 +74,19 @@ export async function callLLM(request: LLMRequest): Promise<LLMResponse> {
 
   // Check if we're trying to send PDF to a non-vision model
   if (contentType === "pdf" && !model.supportsVision) {
-    throw new Error(`Model ${model.name} does not support PDF input. Please use text extraction or choose a vision-capable model.`);
+    throw new Error(
+      `Model ${model.name} does not support PDF input. Please use text extraction or choose a vision-capable model.`,
+    );
   }
 
   switch (model.provider) {
     case "gemini":
       if (contentType === "pdf" && request.pdfBase64) {
-        text = await callGeminiWithPDF(request.prompt, request.pdfBase64, modelId);
+        text = await callGeminiWithPDF(
+          request.prompt,
+          request.pdfBase64,
+          modelId,
+        );
       } else {
         text = await callGemini(request.prompt, request.content, modelId);
       }
@@ -82,7 +94,9 @@ export async function callLLM(request: LLMRequest): Promise<LLMResponse> {
     case "openai":
       if (contentType === "pdf" && request.pdfBase64) {
         // OpenAI doesn't support PDF directly, would need to convert to images
-        throw new Error("OpenAI does not support direct PDF input. Please use text extraction or Gemini.");
+        throw new Error(
+          "OpenAI does not support direct PDF input. Please use text extraction or Gemini.",
+        );
       } else {
         text = await callOpenAI(request.prompt, request.content, modelId);
       }
@@ -142,10 +156,8 @@ export function fitsInContextWindow(
   content: string,
   modelId?: string,
 ): boolean {
-  const model = modelId
-    ? getModelById(modelId)
-    : getCurrentModel();
-  
+  const model = modelId ? getModelById(modelId) : getCurrentModel();
+
   if (!model) return false;
 
   const maxTokens = getPref("maxContextTokens") as number;

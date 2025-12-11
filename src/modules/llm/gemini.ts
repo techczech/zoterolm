@@ -53,7 +53,7 @@ export async function testGeminiConnection(apiKey: string): Promise<{
 
   try {
     const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
-    
+
     const response = await fetch(url, {
       method: "GET",
       headers: {
@@ -70,7 +70,7 @@ export async function testGeminiConnection(apiKey: string): Promise<{
     }
 
     const data = (await response.json()) as unknown as GeminiModelListResponse;
-    
+
     // Filter and transform models
     const models: ModelInfo[] = data.models
       .filter((m) => {
@@ -81,13 +81,14 @@ export async function testGeminiConnection(apiKey: string): Promise<{
       .map((m) => {
         // Extract model ID from name (e.g., "models/gemini-1.5-pro" -> "gemini-1.5-pro")
         const id = m.name.replace("models/", "");
-        
+
         // Determine if model supports vision based on name
-        const supportsVision = id.includes("vision") || 
-          id.includes("gemini-1.5") || 
+        const supportsVision =
+          id.includes("vision") ||
+          id.includes("gemini-1.5") ||
           id.includes("gemini-2") ||
           id.includes("gemini-pro");
-        
+
         return {
           id,
           name: m.displayName || id,
@@ -133,7 +134,9 @@ export async function callGemini(
   const apiKey = getPref("geminiApiKey") as string;
 
   if (!apiKey) {
-    throw new Error("Gemini API key not configured. Please set it in preferences.");
+    throw new Error(
+      "Gemini API key not configured. Please set it in preferences.",
+    );
   }
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${apiKey}`;
@@ -196,7 +199,9 @@ export async function callGeminiWithPDF(
   const apiKey = getPref("geminiApiKey") as string;
 
   if (!apiKey) {
-    throw new Error("Gemini API key not configured. Please set it in preferences.");
+    throw new Error(
+      "Gemini API key not configured. Please set it in preferences.",
+    );
   }
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${apiKey}`;

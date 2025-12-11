@@ -84,7 +84,7 @@ export async function getSummariesForItem(
     if (note && note.isNote()) {
       const tags = note.getTags();
       const hasSummaryTag = tags.some((t) => t.tag === SUMMARY_TAG);
-      
+
       if (hasSummaryTag) {
         const parsed = parseSummaryNote(note as Zotero.Item);
         if (parsed) {
@@ -106,7 +106,7 @@ function parseSummaryNote(note: Zotero.Item): Summary | null {
 
   // Extract metadata from the header
   const metadata = extractMetadata(noteContent);
-  
+
   // Extract content (everything after the metadata div)
   const content = extractContent(noteContent);
 
@@ -140,7 +140,9 @@ function extractMetadata(html: string): SummaryMetadata {
     model: modelMatch ? modelMatch[1].trim() : defaults.model,
     prompt: promptMatch ? promptMatch[1].trim() : defaults.prompt,
     date: dateMatch ? dateMatch[1].trim() : defaults.date,
-    type: (typeMatch ? typeMatch[1].trim() : defaults.type) as SummaryMetadata["type"],
+    type: (typeMatch
+      ? typeMatch[1].trim()
+      : defaults.type) as SummaryMetadata["type"],
     question: questionMatch ? questionMatch[1].trim() : undefined,
   };
 }
@@ -150,8 +152,11 @@ function extractMetadata(html: string): SummaryMetadata {
  */
 function extractContent(html: string): string {
   // Remove the metadata div
-  const withoutMeta = html.replace(/<div[^>]*style="background:[^"]*"[^>]*>[\s\S]*?<\/div>/, "");
-  
+  const withoutMeta = html.replace(
+    /<div[^>]*style="background:[^"]*"[^>]*>[\s\S]*?<\/div>/,
+    "",
+  );
+
   // Convert HTML to plain text
   return withoutMeta
     .replace(/<\/p><p>/g, "\n\n")
@@ -173,7 +178,7 @@ export async function getLatestSummary(
   item: Zotero.Item,
 ): Promise<Summary | null> {
   const summaries = await getSummariesForItem(item);
-  
+
   if (summaries.length === 0) return null;
 
   // Sort by date descending
@@ -243,4 +248,3 @@ function escapeHtml(text: string): string {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
-

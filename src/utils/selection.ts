@@ -16,5 +16,3 @@ export function resolveSelection(
 
   return { resolved: availableIds[0], changed: true };
 }
-
-

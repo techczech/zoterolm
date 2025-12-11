@@ -90,12 +90,12 @@ export function getAllModels(): ModelInfo[] {
 export function getEnabledModels(): ModelInfo[] {
   const enabledIds = getEnabledModelIds();
   const allModels = getAllModels();
-  
+
   if (enabledIds.length === 0) {
     // If no models explicitly enabled, return all
     return allModels;
   }
-  
+
   return allModels.filter((m) => enabledIds.includes(m.id));
 }
 
@@ -126,7 +126,7 @@ export function getGeminiModels(): ModelInfo[] {
   if (cachedGeminiModels) {
     return cachedGeminiModels;
   }
-  
+
   // Try to load from preferences
   const stored = getPref("geminiModels") as string;
   if (stored) {
@@ -137,7 +137,7 @@ export function getGeminiModels(): ModelInfo[] {
       // Fall through to fallback
     }
   }
-  
+
   return FALLBACK_GEMINI_MODELS;
 }
 
@@ -148,7 +148,7 @@ export function getOpenAIModels(): ModelInfo[] {
   if (cachedOpenAIModels) {
     return cachedOpenAIModels;
   }
-  
+
   // Try to load from preferences
   const stored = getPref("openaiModels") as string;
   if (stored) {
@@ -159,7 +159,7 @@ export function getOpenAIModels(): ModelInfo[] {
       // Fall through to fallback
     }
   }
-  
+
   return FALLBACK_OPENAI_MODELS;
 }
 

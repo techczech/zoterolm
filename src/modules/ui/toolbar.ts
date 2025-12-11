@@ -3,7 +3,11 @@
  */
 
 import { getPref, setPref } from "../../utils/prefs";
-import { getEnabledModels, getModelsForProvider, LLMProvider } from "../llm/models";
+import {
+  getEnabledModels,
+  getModelsForProvider,
+  LLMProvider,
+} from "../llm/models";
 import { getAllPrompts, PromptTemplate } from "../prompts/manager";
 
 /**
@@ -98,7 +102,7 @@ async function populateToolbarMenu(
   const modelPopup = ztoolkit.UI.createElement(doc, "menupopup", {});
 
   const enabledModels = getEnabledModels();
-  
+
   if (enabledModels.length === 0) {
     const noModelsItem = ztoolkit.UI.createElement(doc, "menuitem", {
       attributes: {
@@ -221,7 +225,7 @@ async function populateToolbarMenu(
             "chrome://zotero/content/preferences/preferences.xhtml",
             "zotero-prefs",
             "chrome,titlebar,toolbar,centerscreen",
-            { pane: addon.data.config.addonID }
+            { pane: addon.data.config.addonID },
           );
         },
       },
@@ -240,4 +244,3 @@ export function unregisterToolbarButton(win: Window): void {
     button.remove();
   }
 }
-

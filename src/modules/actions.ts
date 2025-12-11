@@ -3,9 +3,9 @@
  */
 
 import { callLLM, ContentType } from "./llm/service";
-import { 
-  extractTextFromItem, 
-  hasPDFAttachment, 
+import {
+  extractTextFromItem,
+  hasPDFAttachment,
   getPDFDataFromItem,
   textToHtml,
 } from "./pdf/extractor";
@@ -21,7 +21,10 @@ import {
   formatSummariesForMetaSummary,
   SummaryMetadata,
 } from "./summaries/manager";
-import { fitSummariesInContext, calculateFitCapacity } from "./summaries/fitter";
+import {
+  fitSummariesInContext,
+  calculateFitCapacity,
+} from "./summaries/fitter";
 import {
   showSummarizeDialog,
   showQuestionDialog,
@@ -38,7 +41,7 @@ import { getProgressTracker } from "./ui/progress";
 export async function summarizeSelectedItems(): Promise<void> {
   const tracker = getProgressTracker();
   tracker.reset();
-  
+
   const ZoteroPane = ztoolkit.getGlobal("ZoteroPane");
   const selectedItems = ZoteroPane.getSelectedItems();
 
@@ -57,10 +60,13 @@ export async function summarizeSelectedItems(): Promise<void> {
     return;
   }
 
-  tracker.log("info", `Model: ${options.modelId}, Content: ${options.contentType}`);
+  tracker.log(
+    "info",
+    `Model: ${options.modelId}, Content: ${options.contentType}`,
+  );
 
   const prompt = await getPromptById(options.promptId);
-  
+
   if (!prompt) {
     tracker.setError("Selected prompt not found");
     showError("ZoteroLM", "Selected prompt not found");
@@ -70,7 +76,10 @@ export async function summarizeSelectedItems(): Promise<void> {
   tracker.log("info", `Prompt: ${prompt.name}`);
 
   // Show a visible progress window
-  const progressWin = showProgressWindow("ZoteroLM", "Starting summarization...");
+  const progressWin = showProgressWindow(
+    "ZoteroLM",
+    "Starting summarization...",
+  );
 
   let successCount = 0;
   let errorCount = 0;
@@ -81,11 +90,16 @@ export async function summarizeSelectedItems(): Promise<void> {
     const itemTitle = item.getDisplayTitle();
     const progressBase = (i / selectedItems.length) * 100;
 
-    tracker.setProgress(progressBase, `Processing ${i + 1}/${selectedItems.length}: ${itemTitle}`);
+    tracker.setProgress(
+      progressBase,
+      `Processing ${i + 1}/${selectedItems.length}: ${itemTitle}`,
+    );
     tracker.log("info", `Processing: ${itemTitle}`);
-    
+
     // Update visible progress window
-    progressWin.setText(`Processing ${i + 1}/${selectedItems.length}: ${itemTitle}`);
+    progressWin.setText(
+      `Processing ${i + 1}/${selectedItems.length}: ${itemTitle}`,
+    );
     progressWin.setProgress(Math.round(progressBase));
 
     try {
@@ -97,9 +111,12 @@ export async function summarizeSelectedItems(): Promise<void> {
       }
 
       // Check for PDF attachment
-      tracker.setStage("preparing", `Checking PDF attachment for: ${itemTitle}`);
+      tracker.setStage(
+        "preparing",
+        `Checking PDF attachment for: ${itemTitle}`,
+      );
       const hasPdf = await hasPDFAttachment(item);
-      
+
       if (!hasPdf) {
         tracker.log("warn", `Skipping: ${itemTitle} (no PDF attachment)`);
         skippedCount++;
@@ -116,13 +133,16 @@ export async function summarizeSelectedItems(): Promise<void> {
         progressWin.setText("Encoding PDF...");
         const pdfData = await getPDFDataFromItem(item);
         pdfBase64 = pdfData.base64;
-        tracker.log("info", `PDF size: ${(pdfData.sizeBytes / 1024).toFixed(1)} KB`);
+        tracker.log(
+          "info",
+          `PDF size: ${(pdfData.sizeBytes / 1024).toFixed(1)} KB`,
+        );
       } else {
         tracker.setStage("extracting", `Extracting text: ${itemTitle}`);
         tracker.log("info", "Extracting text from PDF...");
-        
+
         const extraction = await extractTextFromItem(item);
-        
+
         if (options.contentType === "html") {
           content = textToHtml(extraction.text, itemTitle);
           tracker.log("info", `Converted to HTML (${content.length} chars)`);
@@ -133,9 +153,10 @@ export async function summarizeSelectedItems(): Promise<void> {
       }
 
       // Apply prompt to content
-      const promptText = options.contentType === "pdf" 
-        ? prompt.content.replace(/\{\{content\}\}/g, "[PDF attached]")
-        : applyPrompt(prompt, content);
+      const promptText =
+        options.contentType === "pdf"
+          ? prompt.content.replace(/\{\{content\}\}/g, "[PDF attached]")
+          : applyPrompt(prompt, content);
 
       // Call LLM
       tracker.setStage("calling_api", `Calling LLM API...`);
@@ -145,7 +166,7 @@ export async function summarizeSelectedItems(): Promise<void> {
 
       tracker.setStage("waiting", "Waiting for response...");
       progressWin.setText("Waiting for LLM response...");
-      
+
       const response = await callLLM({
         prompt: promptText,
         content: options.contentType === "pdf" ? "" : content,
@@ -182,7 +203,7 @@ export async function summarizeSelectedItems(): Promise<void> {
   // Final status
   const totalProcessed = successCount + errorCount;
   const statusMsg = `Completed: ${successCount} success, ${errorCount} errors, ${skippedCount} skipped`;
-  
+
   if (successCount > 0) {
     tracker.setStage("complete", statusMsg);
     showSuccess("ZoteroLM", statusMsg);
@@ -190,8 +211,14 @@ export async function summarizeSelectedItems(): Promise<void> {
     tracker.setError(statusMsg);
     showError("ZoteroLM", statusMsg);
   } else {
-    tracker.setStage("complete", `No items processed. ${skippedCount} skipped (no PDF attachments).`);
-    showError("ZoteroLM", `No items could be processed. Make sure selected items have PDF attachments.`);
+    tracker.setStage(
+      "complete",
+      `No items processed. ${skippedCount} skipped (no PDF attachments).`,
+    );
+    showError(
+      "ZoteroLM",
+      `No items could be processed. Make sure selected items have PDF attachments.`,
+    );
   }
 }
 
@@ -214,7 +241,10 @@ export async function askQuestionAboutItem(): Promise<void> {
   const itemTitle = item.getDisplayTitle();
 
   if (item.isNote() || item.isAttachment()) {
-    showError("ZoteroLM", "Please select a regular item, not a note or attachment");
+    showError(
+      "ZoteroLM",
+      "Please select a regular item, not a note or attachment",
+    );
     return;
   }
 
@@ -236,7 +266,10 @@ export async function askQuestionAboutItem(): Promise<void> {
   }
 
   tracker.log("info", `Question: ${options.question}`);
-  tracker.log("info", `Model: ${options.modelId}, Content: ${options.contentType}`);
+  tracker.log(
+    "info",
+    `Model: ${options.modelId}, Content: ${options.contentType}`,
+  );
 
   try {
     let content = "";
@@ -247,7 +280,10 @@ export async function askQuestionAboutItem(): Promise<void> {
       tracker.setStage("encoding", "Encoding PDF...");
       const pdfData = await getPDFDataFromItem(item);
       pdfBase64 = pdfData.base64;
-      tracker.log("info", `PDF size: ${(pdfData.sizeBytes / 1024).toFixed(1)} KB`);
+      tracker.log(
+        "info",
+        `PDF size: ${(pdfData.sizeBytes / 1024).toFixed(1)} KB`,
+      );
     } else {
       tracker.setStage("extracting", "Extracting text...");
       const extraction = await extractTextFromItem(item);
@@ -256,9 +292,10 @@ export async function askQuestionAboutItem(): Promise<void> {
     }
 
     // Create question prompt
-    const questionPrompt = options.contentType === "pdf"
-      ? `Please answer the following question based on the attached PDF document:\n\nQuestion: ${options.question}`
-      : `Please answer the following question based on the document content:\n\nQuestion: ${options.question}\n\nDocument:\n${content}`;
+    const questionPrompt =
+      options.contentType === "pdf"
+        ? `Please answer the following question based on the attached PDF document:\n\nQuestion: ${options.question}`
+        : `Please answer the following question based on the document content:\n\nQuestion: ${options.question}\n\nDocument:\n${content}`;
 
     tracker.setStage("calling_api", "Calling LLM API...");
     tracker.setStage("waiting", "Waiting for response...");
@@ -353,7 +390,10 @@ export async function summarizeCollection(): Promise<void> {
 
   // Calculate fit capacity
   const fitCapacity = calculateFitCapacity(summaries, promptText);
-  tracker.log("info", `Context fit: ${fitCapacity.canFit} of ${summaries.length} summaries`);
+  tracker.log(
+    "info",
+    `Context fit: ${fitCapacity.canFit} of ${summaries.length} summaries`,
+  );
 
   // Show dialog with fit preview
   const options = await showCollectionSummaryDialog(
@@ -389,7 +429,10 @@ export async function summarizeCollection(): Promise<void> {
       throw new Error("No summaries fit in context window");
     }
 
-    tracker.log("info", `Including ${fitResult.included.length} of ${summaries.length} summaries`);
+    tracker.log(
+      "info",
+      `Including ${fitResult.included.length} of ${summaries.length} summaries`,
+    );
 
     // Format summaries for meta-summary
     const summaryContent = formatSummariesForMetaSummary(fitResult.included);
@@ -413,7 +456,7 @@ export async function summarizeCollection(): Promise<void> {
     // Create a standalone note in the collection for the meta-summary
     tracker.setStage("saving", "Saving collection summary...");
     const note = new Zotero.Item("note");
-    
+
     const htmlContent = `<div style="background: #e0e0ff; padding: 8px; margin-bottom: 12px; border-radius: 4px;">
 <strong>ZoteroLM Collection Summary</strong><br>
 Collection: ${escapeHtml(collection.name)}<br>
