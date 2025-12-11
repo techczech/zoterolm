@@ -1,9 +1,12 @@
 /**
  * Dialog utilities for user interactions
+ *
+ * Uses XUL menulist with native="true" for Zotero 8 compatibility.
+ * HTML select elements have rendering issues in Zotero 8's Firefox 115+ engine.
  */
 
 import { getPref } from "../../utils/prefs";
-import { getEnabledModels, modelSupportsVision } from "../llm/models";
+import { getEnabledModels } from "../llm/models";
 import { getAllPrompts, PromptTemplate } from "../prompts/manager";
 import { ContentType } from "../llm/service";
 
@@ -17,6 +20,109 @@ export interface QuestionOptions {
   modelId: string;
   question: string;
   contentType: ContentType;
+}
+
+// XUL namespace for native elements
+const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
+
+
+/**
+ * Helper to create a placeholder cell for a menulist
+ */
+function createMenulistPlaceholder(id: string): any {
+  return {
+    tag: "div",
+    id: `${id}-container`,
+    namespace: "html",
+    styles: {
+      minWidth: "200px",
+    },
+  };
+}
+
+/**
+ * Helper to populate a container with a custom dropdown
+ * (Native HTML select doesn't work in Zotero 8's XUL dialog context - SelectParent.sys.mjs breaks it)
+ */
+function populateMenulist(
+  doc: Document,
+  containerId: string,
+  selectId: string,
+  options: Array<{ value: string; label: string }>,
+  selectedValue: string,
+): void {
+  const container = doc.getElementById(containerId);
+  if (!container) {
+    return;
+  }
+
+  // Create custom dropdown (native select broken by Firefox's SelectParent in XUL context)
+  const wrapper = doc.createElementNS("http://www.w3.org/1999/xhtml", "div") as HTMLDivElement;
+  wrapper.id = selectId;
+  wrapper.style.cssText = "position:relative;width:100%;min-width:200px;";
+  wrapper.dataset.value = selectedValue;
+
+  // The visible button
+  const button = doc.createElementNS("http://www.w3.org/1999/xhtml", "div") as HTMLDivElement;
+  button.className = "custom-select-button";
+  button.style.cssText = "padding:6px 10px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;display:flex;justify-content:space-between;align-items:center;";
+
+  const selectedLabel = options.find(o => o.value === selectedValue)?.label || options[0]?.label || "";
+  button.innerHTML = `<span class="selected-text">${selectedLabel}</span><span style="margin-left:8px;">▼</span>`;
+
+  // The dropdown list (hidden by default)
+  const dropdown = doc.createElementNS("http://www.w3.org/1999/xhtml", "div") as HTMLDivElement;
+  dropdown.className = "custom-select-dropdown";
+  dropdown.style.cssText = "display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #ccc;border-radius:4px;max-height:200px;overflow-y:auto;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,0.15);";
+
+  // Add options
+  for (const opt of options) {
+    const item = doc.createElementNS("http://www.w3.org/1999/xhtml", "div") as HTMLDivElement;
+    item.className = "custom-select-option";
+    item.dataset.value = opt.value;
+    item.textContent = opt.label;
+    item.style.cssText = "padding:8px 10px;cursor:pointer;";
+    if (opt.value === selectedValue) {
+      item.style.background = "#e3f2fd";
+    }
+
+    // Hover effect
+    item.addEventListener("mouseenter", () => { item.style.background = "#f0f0f0"; });
+    item.addEventListener("mouseleave", () => {
+      item.style.background = item.dataset.value === wrapper.dataset.value ? "#e3f2fd" : "#fff";
+    });
+
+    // Selection
+    item.addEventListener("click", (e) => {
+      e.stopPropagation();
+      wrapper.dataset.value = opt.value;
+      const textSpan = button.querySelector(".selected-text");
+      if (textSpan) textSpan.textContent = opt.label;
+      dropdown.style.display = "none";
+      // Update highlight
+      dropdown.querySelectorAll(".custom-select-option").forEach((el: any) => {
+        el.style.background = el.dataset.value === opt.value ? "#e3f2fd" : "#fff";
+      });
+    });
+
+    dropdown.appendChild(item);
+  }
+
+  // Toggle dropdown on button click
+  button.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const isOpen = dropdown.style.display !== "none";
+    dropdown.style.display = isOpen ? "none" : "block";
+  });
+
+  // Close on click outside
+  doc.addEventListener("click", () => {
+    dropdown.style.display = "none";
+  });
+
+  wrapper.appendChild(button);
+  wrapper.appendChild(dropdown);
+  container.appendChild(wrapper);
 }
 
 /**
@@ -33,11 +139,43 @@ export async function showSummarizeDialog(): Promise<SummarizeOptions | null> {
     return null;
   }
 
+  // Prepare options for menulists
+  const modelOptions = models.map((m) => ({
+    value: m.id,
+    label: `${m.name}${m.supportsVision ? " 📄" : ""}`,
+  }));
+  const promptOptions =
+    prompts.length > 0
+      ? prompts.map((p) => ({ value: p.id, label: p.name }))
+      : [{ value: "", label: "No prompts available" }];
+  const contentOptions = [
+    { value: "text", label: "Extracted text (fastest)" },
+    { value: "pdf", label: "Full PDF (vision models only)" },
+    { value: "html", label: "HTML format" },
+  ];
+
+  const initialModelId = currentModel || models[0].id;
+  const initialPromptId = currentPromptId || (prompts[0]?.id || "");
+  const initialContentType = "text";
+
   const dialogData: { [key: string]: any } = {
-    modelId: currentModel || models[0].id,
-    promptId: currentPromptId || (prompts[0]?.id || ""),
-    contentType: "text",
+    modelId: initialModelId,
+    promptId: initialPromptId,
+    contentType: initialContentType,
     confirmed: false,
+    beforeUnloadCallback: () => {
+      const doc = dialogHelper.window?.document;
+      if (!doc) return;
+
+      // Read values from custom dropdowns before dialog closes
+      const modelSelect = doc.getElementById("model-select") as HTMLDivElement;
+      const promptSelect = doc.getElementById("prompt-select") as HTMLDivElement;
+      const contentSelect = doc.getElementById("content-select") as HTMLDivElement;
+
+      if (modelSelect?.dataset.value) dialogData.modelId = modelSelect.dataset.value;
+      if (promptSelect?.dataset.value) dialogData.promptId = promptSelect.dataset.value;
+      if (contentSelect?.dataset.value) dialogData.contentType = contentSelect.dataset.value;
+    },
   };
 
   const dialogHelper = new ztoolkit.Dialog(6, 2)
@@ -50,87 +188,19 @@ export async function showSummarizeDialog(): Promise<SummarizeOptions | null> {
       namespace: "html",
       properties: { innerHTML: "Model:" },
     })
-    .addCell(1, 1, {
-      tag: "select",
-      id: "model-select",
-      namespace: "html",
-      attributes: {
-        "data-bind": "modelId",
-        "data-prop": "value",
-      },
-      children: models.map((m) => ({
-        tag: "option",
-        namespace: "html",
-        attributes: { value: m.id },
-        properties: { 
-          innerHTML: `${m.name}${m.supportsVision ? " 📄" : ""}`,
-        },
-      })),
-    })
+    .addCell(1, 1, createMenulistPlaceholder("model"))
     .addCell(2, 0, {
       tag: "label",
       namespace: "html",
       properties: { innerHTML: "Prompt:" },
     })
-    .addCell(2, 1, {
-      tag: "select",
-      id: "prompt-select",
-      namespace: "html",
-      attributes: {
-        "data-bind": "promptId",
-        "data-prop": "value",
-      },
-      children:
-        prompts.length > 0
-          ? prompts.map((p) => ({
-              tag: "option",
-              namespace: "html",
-              attributes: { value: p.id },
-              properties: { innerHTML: p.name },
-            }))
-          : [
-              {
-                tag: "option",
-                namespace: "html",
-                attributes: { value: "", disabled: "true" },
-                properties: { innerHTML: "No prompts available" },
-              },
-            ],
-    })
+    .addCell(2, 1, createMenulistPlaceholder("prompt"))
     .addCell(3, 0, {
       tag: "label",
       namespace: "html",
       properties: { innerHTML: "Content:" },
     })
-    .addCell(3, 1, {
-      tag: "select",
-      id: "content-select",
-      namespace: "html",
-      attributes: {
-        "data-bind": "contentType",
-        "data-prop": "value",
-      },
-      children: [
-        {
-          tag: "option",
-          namespace: "html",
-          attributes: { value: "text" },
-          properties: { innerHTML: "Extracted text (fastest)" },
-        },
-        {
-          tag: "option",
-          namespace: "html",
-          attributes: { value: "pdf" },
-          properties: { innerHTML: "Full PDF (vision models only)" },
-        },
-        {
-          tag: "option",
-          namespace: "html",
-          attributes: { value: "html" },
-          properties: { innerHTML: "HTML format" },
-        },
-      ],
-    })
+    .addCell(3, 1, createMenulistPlaceholder("content"))
     .addCell(4, 0, {
       tag: "p",
       styles: { fontSize: "0.85em", color: "#666" },
@@ -147,6 +217,16 @@ export async function showSummarizeDialog(): Promise<SummarizeOptions | null> {
     .addButton("Cancel", "cancel")
     .setDialogData(dialogData)
     .open("ZoteroLM - Summarize");
+
+  // Populate dropdowns after dialog opens (small delay to ensure DOM is ready)
+  setTimeout(() => {
+    const doc = dialogHelper.window?.document;
+    if (doc) {
+      populateMenulist(doc, "model-container", "model-select", modelOptions, initialModelId);
+      populateMenulist(doc, "prompt-container", "prompt-select", promptOptions, initialPromptId);
+      populateMenulist(doc, "content-container", "content-select", contentOptions, initialContentType);
+    }
+  }, 50);
 
   await dialogData.unloadLock?.promise;
 
@@ -182,11 +262,34 @@ export async function showQuestionDialog(): Promise<QuestionOptions | null> {
     return null;
   }
 
+  // Prepare options for menulists
+  const modelOptions = models.map((m) => ({
+    value: m.id,
+    label: `${m.name}${m.supportsVision ? " 📄" : ""}`,
+  }));
+  const contentOptions = [
+    { value: "text", label: "Extracted text" },
+    { value: "pdf", label: "Full PDF (vision models)" },
+  ];
+
+  const initialModelId = currentModel || models[0].id;
+  const initialContentType = "text";
+
   const dialogData: { [key: string]: any } = {
-    modelId: currentModel || models[0].id,
+    modelId: initialModelId,
     question: "",
-    contentType: "text",
+    contentType: initialContentType,
     confirmed: false,
+    beforeUnloadCallback: () => {
+      const doc = dialogHelper.window?.document;
+      if (!doc) return;
+
+      const modelSelect = doc.getElementById("model-select") as HTMLDivElement;
+      const contentSelect = doc.getElementById("content-select") as HTMLDivElement;
+
+      if (modelSelect?.dataset.value) dialogData.modelId = modelSelect.dataset.value;
+      if (contentSelect?.dataset.value) dialogData.contentType = contentSelect.dataset.value;
+    },
   };
 
   const dialogHelper = new ztoolkit.Dialog(6, 2)
@@ -199,51 +302,13 @@ export async function showQuestionDialog(): Promise<QuestionOptions | null> {
       namespace: "html",
       properties: { innerHTML: "Model:" },
     })
-    .addCell(1, 1, {
-      tag: "select",
-      id: "model-select",
-      namespace: "html",
-      attributes: {
-        "data-bind": "modelId",
-        "data-prop": "value",
-      },
-      children: models.map((m) => ({
-        tag: "option",
-        namespace: "html",
-        attributes: { value: m.id },
-        properties: { 
-          innerHTML: `${m.name}${m.supportsVision ? " 📄" : ""}`,
-        },
-      })),
-    })
+    .addCell(1, 1, createMenulistPlaceholder("model"))
     .addCell(2, 0, {
       tag: "label",
       namespace: "html",
       properties: { innerHTML: "Content:" },
     })
-    .addCell(2, 1, {
-      tag: "select",
-      id: "content-select",
-      namespace: "html",
-      attributes: {
-        "data-bind": "contentType",
-        "data-prop": "value",
-      },
-      children: [
-        {
-          tag: "option",
-          namespace: "html",
-          attributes: { value: "text" },
-          properties: { innerHTML: "Extracted text" },
-        },
-        {
-          tag: "option",
-          namespace: "html",
-          attributes: { value: "pdf" },
-          properties: { innerHTML: "Full PDF (vision models)" },
-        },
-      ],
-    })
+    .addCell(2, 1, createMenulistPlaceholder("content"))
     .addCell(3, 0, {
       tag: "label",
       namespace: "html",
@@ -272,6 +337,15 @@ export async function showQuestionDialog(): Promise<QuestionOptions | null> {
     .addButton("Cancel", "cancel")
     .setDialogData(dialogData)
     .open("ZoteroLM - Ask Question");
+
+  // Populate menulists after dialog opens
+  setTimeout(() => {
+    const doc = dialogHelper.window?.document;
+    if (doc) {
+      populateMenulist(doc, "model-container", "model-select", modelOptions, initialModelId);
+      populateMenulist(doc, "content-container", "content-select", contentOptions, initialContentType);
+    }
+  }, 50);
 
   await dialogData.unloadLock?.promise;
 
@@ -306,18 +380,18 @@ export function showProgressWindow(
     closeOnClick: false,
     closeTime: -1,
   });
-  
+
   // Create the line and store reference via closure
   let lineRef: ReturnType<typeof win.createLine> | null = null;
-  
+
   win.createLine({
     text: message,
     type: "default",
     progress: 0,
   });
-  
+
   win.show();
-  
+
   // Return an interface to update the progress
   return {
     setText: (text: string) => {
@@ -391,7 +465,7 @@ export async function showCollectionSummaryDialog(
   const prompts = await getAllPrompts();
   const models = getEnabledModels();
   const currentModel = getPref("defaultModel") as string;
-  
+
   // Find the meta-summary prompt
   const metaPrompt = prompts.find((p) =>
     p.name.toLowerCase().includes("meta"),
@@ -403,10 +477,30 @@ export async function showCollectionSummaryDialog(
     return null;
   }
 
+  // Prepare options for menulists
+  const modelOptions = models.map((m) => ({ value: m.id, label: m.name }));
+  const promptOptions =
+    prompts.length > 0
+      ? prompts.map((p) => ({ value: p.id, label: p.name }))
+      : [{ value: "", label: "No prompts available" }];
+
+  const initialModelId = currentModel || models[0].id;
+  const initialPromptId = defaultPromptId;
+
   const dialogData: { [key: string]: any } = {
-    modelId: currentModel || models[0].id,
-    promptId: defaultPromptId,
+    modelId: initialModelId,
+    promptId: initialPromptId,
     confirmed: false,
+    beforeUnloadCallback: () => {
+      const doc = dialogHelper.window?.document;
+      if (!doc) return;
+
+      const modelSelect = doc.getElementById("model-select") as HTMLDivElement;
+      const promptSelect = doc.getElementById("prompt-select") as HTMLDivElement;
+
+      if (modelSelect?.dataset.value) dialogData.modelId = modelSelect.dataset.value;
+      if (promptSelect?.dataset.value) dialogData.promptId = promptSelect.dataset.value;
+    },
   };
 
   const fitMessage =
@@ -434,51 +528,13 @@ export async function showCollectionSummaryDialog(
       namespace: "html",
       properties: { innerHTML: "Model:" },
     })
-    .addCell(3, 1, {
-      tag: "select",
-      id: "model-select",
-      namespace: "html",
-      attributes: {
-        "data-bind": "modelId",
-        "data-prop": "value",
-      },
-      children: models.map((m) => ({
-        tag: "option",
-        namespace: "html",
-        attributes: { value: m.id },
-        properties: { innerHTML: `${m.name}` },
-      })),
-    })
+    .addCell(3, 1, createMenulistPlaceholder("model"))
     .addCell(4, 0, {
       tag: "label",
       namespace: "html",
       properties: { innerHTML: "Prompt:" },
     })
-    .addCell(4, 1, {
-      tag: "select",
-      id: "prompt-select",
-      namespace: "html",
-      attributes: {
-        "data-bind": "promptId",
-        "data-prop": "value",
-      },
-      children:
-        prompts.length > 0
-          ? prompts.map((p) => ({
-              tag: "option",
-              namespace: "html",
-              attributes: { value: p.id },
-              properties: { innerHTML: p.name },
-            }))
-          : [
-              {
-                tag: "option",
-                namespace: "html",
-                attributes: { value: "", disabled: "true" },
-                properties: { innerHTML: "No prompts available" },
-              },
-            ],
-    })
+    .addCell(4, 1, createMenulistPlaceholder("prompt"))
     .addButton("Generate Meta-Summary", "confirm", {
       callback: () => {
         dialogData.confirmed = true;
@@ -487,6 +543,15 @@ export async function showCollectionSummaryDialog(
     .addButton("Cancel", "cancel")
     .setDialogData(dialogData)
     .open("ZoteroLM - Collection Summary");
+
+  // Populate menulists after dialog opens
+  setTimeout(() => {
+    const doc = dialogHelper.window?.document;
+    if (doc) {
+      populateMenulist(doc, "model-container", "model-select", modelOptions, initialModelId);
+      populateMenulist(doc, "prompt-container", "prompt-select", promptOptions, initialPromptId);
+    }
+  }, 50);
 
   await dialogData.unloadLock?.promise;
 

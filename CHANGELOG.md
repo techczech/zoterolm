@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2025-12-11
+
+### Fixed
+- **Zotero 8 Beta Compatibility**: Fixed dropdown selectors in dialogs not working in Zotero 8 Beta
+  - Native HTML `<select>` and XUL `<menulist>` elements don't work properly in Zotero 8's hybrid XUL/HTML dialog context due to Firefox 115+ SelectParent.sys.mjs incompatibility
+  - Implemented custom dropdown components using plain HTML divs with click handlers
+  - Dropdowns now display correctly and selections persist
+
+### Added
+- Selection resolution utility to handle cases where stored preferences reference unavailable options
+
 ## [0.1.0] - 2025-12-10
 
 ### Added
@@ -28,4 +39,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Notes stored as child items of library entries
 - Batch processing support for multiple items
 
+[0.2.0]: https://github.com/techczech/zoterolm/releases/tag/v0.2.0
 [0.1.0]: https://github.com/techczech/zoterolm/releases/tag/v0.1.0

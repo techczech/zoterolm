@@ -5,12 +5,13 @@
 import { getAllPrompts } from "./prompts/manager";
 import { getPref, setPref } from "../utils/prefs";
 import { testConnection } from "./llm/service";
-import { 
-  getAllModels, 
-  getEnabledModelIds, 
+import {
+  getAllModels,
+  getEnabledModelIds,
   setEnabledModelIds,
   ModelInfo,
 } from "./llm/models";
+import { resolveSelection } from "../utils/selection";
 
 export function registerPrefsScripts(win: Window): void {
   // Populate prompt dropdown
@@ -30,11 +31,11 @@ export async function testGeminiConnection(win: Window): Promise<void> {
   const keyInput = doc.getElementById(
     `zotero-prefpane-${addon.data.config.addonRef}-gemini-key`,
   ) as HTMLInputElement;
-  
+
   if (!statusDiv || !keyInput) return;
 
   const apiKey = keyInput.value || (getPref("geminiApiKey") as string);
-  
+
   if (!apiKey) {
     statusDiv.innerHTML = '<span style="color: red;">Please enter an API key first.</span>';
     return;
@@ -44,7 +45,7 @@ export async function testGeminiConnection(win: Window): Promise<void> {
 
   try {
     const result = await testConnection("gemini", apiKey);
-    
+
     if (result.success) {
       statusDiv.innerHTML = `<span style="color: green;">✓ ${result.message}</span>`;
       // Refresh the model UI
@@ -68,11 +69,11 @@ export async function testOpenAIConnection(win: Window): Promise<void> {
   const keyInput = doc.getElementById(
     `zotero-prefpane-${addon.data.config.addonRef}-openai-key`,
   ) as HTMLInputElement;
-  
+
   if (!statusDiv || !keyInput) return;
 
   const apiKey = keyInput.value || (getPref("openaiApiKey") as string);
-  
+
   if (!apiKey) {
     statusDiv.innerHTML = '<span style="color: red;">Please enter an API key first.</span>';
     return;
@@ -82,7 +83,7 @@ export async function testOpenAIConnection(win: Window): Promise<void> {
 
   try {
     const result = await testConnection("openai", apiKey);
-    
+
     if (result.success) {
       statusDiv.innerHTML = `<span style="color: green;">✓ ${result.message}</span>`;
       // Refresh the model UI
@@ -100,23 +101,23 @@ export async function testOpenAIConnection(win: Window): Promise<void> {
  */
 function populateModelUI(win: Window): void {
   const doc = win.document;
-  
+
   // Get all available models
   const allModels = getAllModels();
   const enabledIds = getEnabledModelIds();
   const currentModelId = getPref("defaultModel") as string;
-  
+
   // Populate the default model dropdown
   const modelPopup = doc.getElementById(
     `zotero-prefpane-${addon.data.config.addonRef}-model-popup`,
   );
-  
+
   if (modelPopup) {
     // Clear existing items
     while (modelPopup.firstChild) {
       modelPopup.removeChild(modelPopup.firstChild);
     }
-    
+
     // Add models to dropdown
     for (const model of allModels) {
       const item = doc.createElementNS(
@@ -128,51 +129,60 @@ function populateModelUI(win: Window): void {
       item.setAttribute("value", model.id);
       modelPopup.appendChild(item);
     }
-    
+
     // Set current value
     const menulist = modelPopup.parentElement as XUL.MenuList;
-    if (menulist && currentModelId) {
-      menulist.value = currentModelId;
+    if (menulist) {
+      const modelResolution = resolveSelection(
+        currentModelId,
+        allModels.map((m) => m.id),
+      );
+      if (modelResolution.resolved) {
+        menulist.value = modelResolution.resolved;
+        if (modelResolution.changed) {
+          setPref("defaultModel", modelResolution.resolved);
+        }
+      }
     }
   }
-  
+
   // Populate the model checkbox list
   const modelList = doc.getElementById(
     `zotero-prefpane-${addon.data.config.addonRef}-model-list`,
   );
-  
+
   if (modelList) {
     // Clear existing items
     modelList.innerHTML = "";
-    
+
     if (allModels.length === 0) {
       modelList.innerHTML = '<html:em>No models loaded. Test your API connection above.</html:em>';
       return;
     }
-    
+
     // Group by provider
     const geminiModels = allModels.filter((m) => m.provider === "gemini");
     const openaiModels = allModels.filter((m) => m.provider === "openai");
-    
+
     // Add Gemini models
     if (geminiModels.length > 0) {
       const geminiHeader = doc.createElementNS("http://www.w3.org/1999/xhtml", "h4") as HTMLHeadingElement;
       geminiHeader.textContent = "Google Gemini";
       geminiHeader.style.margin = "8px 0 4px 0";
       modelList.appendChild(geminiHeader);
-      
+
       for (const model of geminiModels) {
         modelList.appendChild(createModelCheckbox(doc, model, enabledIds));
       }
     }
-    
+
     // Add OpenAI models
     if (openaiModels.length > 0) {
       const openaiHeader = doc.createElementNS("http://www.w3.org/1999/xhtml", "h4") as HTMLHeadingElement;
       openaiHeader.textContent = "OpenAI";
       openaiHeader.style.margin = "12px 0 4px 0";
       modelList.appendChild(openaiHeader);
-      
+
       for (const model of openaiModels) {
         modelList.appendChild(createModelCheckbox(doc, model, enabledIds));
       }
@@ -184,13 +194,13 @@ function populateModelUI(win: Window): void {
  * Create a checkbox for a model
  */
 function createModelCheckbox(
-  doc: Document, 
-  model: ModelInfo, 
+  doc: Document,
+  model: ModelInfo,
   enabledIds: string[],
 ): HTMLElement {
   const container = doc.createElementNS("http://www.w3.org/1999/xhtml", "div") as HTMLDivElement;
   container.style.cssText = "display: flex; align-items: center; padding: 2px 0;";
-  
+
   const checkbox = doc.createElementNS("http://www.w3.org/1999/xhtml", "input") as HTMLInputElement;
   checkbox.setAttribute("type", "checkbox");
   checkbox.setAttribute("id", `model-${model.id}`);
@@ -200,21 +210,21 @@ function createModelCheckbox(
     checkbox.setAttribute("checked", "true");
   }
   checkbox.style.marginRight = "8px";
-  
+
   checkbox.addEventListener("change", () => {
     updateEnabledModels(doc);
   });
-  
+
   const label = doc.createElementNS("http://www.w3.org/1999/xhtml", "label") as HTMLLabelElement;
   label.setAttribute("for", `model-${model.id}`);
   const visionIcon = model.supportsVision ? " 📄" : "";
   const contextInfo = `${Math.round(model.contextWindow / 1000)}K context`;
   label.textContent = `${model.name}${visionIcon} (${contextInfo})`;
   label.style.cursor = "pointer";
-  
+
   container.appendChild(checkbox);
   container.appendChild(label);
-  
+
   return container;
 }
 
@@ -224,14 +234,14 @@ function createModelCheckbox(
 function updateEnabledModels(doc: Document): void {
   const allModels = getAllModels();
   const enabledIds: string[] = [];
-  
+
   for (const model of allModels) {
     const checkbox = doc.getElementById(`model-${model.id}`) as HTMLInputElement;
     if (checkbox && checkbox.checked) {
       enabledIds.push(model.id);
     }
   }
-  
+
   // If all models are checked, store empty array (means all enabled)
   if (enabledIds.length === allModels.length) {
     setEnabledModelIds([]);
@@ -280,8 +290,17 @@ async function populatePromptDropdown(win: Window): Promise<void> {
 
     // Select current prompt
     const menulist = promptPopup.parentElement as XUL.MenuList;
-    if (menulist && currentPromptId) {
-      menulist.value = currentPromptId;
+    if (menulist) {
+      const promptResolution = resolveSelection(
+        currentPromptId,
+        prompts.map((p) => p.id),
+      );
+      if (promptResolution.resolved) {
+        menulist.value = promptResolution.resolved;
+        if (promptResolution.changed) {
+          setPref("defaultPromptId", promptResolution.resolved);
+        }
+      }
     }
   }
 }
