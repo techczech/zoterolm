@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2025-12-11
+
+### Fixed
+
+- **Progress window updates**: Progress text/percentage updates now reliably update the visible progress window during summarization.
+- **Dialog dropdown behavior**: Avoid accumulating multiple “click outside to close” handlers when dialogs contain multiple custom dropdowns.
+- **Large PDF handling**: More robust PDF base64 encoding to avoid failures/performance issues on large files.
+- **Summary parsing robustness**: Summary notes now include stable HTML markers so metadata/content extraction is less brittle (with fallback for older notes).
+
+### Changed
+
+- **Code organization**: Split `src/modules/actions.ts` into smaller modules and centralized HTML escaping.
+
 ## [0.2.0] - 2025-12-11
 
 ### Fixed
@@ -43,5 +56,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Notes stored as child items of library entries
 - Batch processing support for multiple items
 
+[0.2.1]: https://github.com/techczech/zoterolm/releases/tag/v0.2.1
 [0.2.0]: https://github.com/techczech/zoterolm/releases/tag/v0.2.0
 [0.1.0]: https://github.com/techczech/zoterolm/releases/tag/v0.1.0

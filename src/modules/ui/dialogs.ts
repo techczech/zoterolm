@@ -40,6 +40,26 @@ function createMenulistPlaceholder(id: string): any {
 }
 
 /**
+ * Install a single click handler per dialog document that closes any open
+ * custom dropdowns. This avoids accumulating multiple handlers when a dialog
+ * contains several custom dropdowns.
+ */
+function ensureCustomDropdownCloseHandler(doc: Document): void {
+  const key = "__zoterolmCustomDropdownCloseHandlerInstalled";
+  const docAny = doc as unknown as Record<string, unknown>;
+  if (docAny[key]) return;
+  docAny[key] = true;
+
+  doc.addEventListener("click", () => {
+    doc
+      .querySelectorAll(".custom-select-dropdown")
+      .forEach((el: Element) => {
+        (el as HTMLElement).style.display = "none";
+      });
+  });
+}
+
+/**
  * Helper to populate a container with a custom dropdown
  * (Native HTML select doesn't work in Zotero 8's XUL dialog context - SelectParent.sys.mjs breaks it)
  */
@@ -54,6 +74,8 @@ function populateMenulist(
   if (!container) {
     return;
   }
+
+  ensureCustomDropdownCloseHandler(doc);
 
   // Create custom dropdown (native select broken by Firefox's SelectParent in XUL context)
   const wrapper = doc.createElementNS(
@@ -133,11 +155,6 @@ function populateMenulist(
     e.stopPropagation();
     const isOpen = dropdown.style.display !== "none";
     dropdown.style.display = isOpen ? "none" : "block";
-  });
-
-  // Close on click outside
-  doc.addEventListener("click", () => {
-    dropdown.style.display = "none";
   });
 
   wrapper.appendChild(button);
@@ -445,28 +462,25 @@ export function showProgressWindow(
   title: string,
   message: string,
 ): UpdatableProgressWindow {
-  const win = new ztoolkit.ProgressWindow(title, {
+  // Match the known-working pattern used elsewhere in the codebase:
+  // create the line, show the window, then update it via changeLine().
+  const popupWin = new ztoolkit.ProgressWindow(title, {
     closeOnClick: false,
     closeTime: -1,
-  });
-
-  // Create the line and store reference via closure
-  const lineRef: ReturnType<typeof win.createLine> | null = null;
-
-  win.createLine({
-    text: message,
-    type: "default",
-    progress: 0,
-  });
-
-  win.show();
+  })
+    .createLine({
+      text: message,
+      type: "default",
+      progress: 0,
+    })
+    .show();
 
   // Return an interface to update the progress
   return {
     setText: (text: string) => {
       try {
         // Access internal line via the window's changeLine method
-        win.changeLine({
+        popupWin.changeLine({
           text,
           type: "default",
         });
@@ -476,7 +490,7 @@ export function showProgressWindow(
     },
     setProgress: (progress: number) => {
       try {
-        win.changeLine({
+        popupWin.changeLine({
           progress: Math.min(100, Math.max(0, progress)),
         });
       } catch (e) {
@@ -485,7 +499,7 @@ export function showProgressWindow(
     },
     close: () => {
       try {
-        win.close();
+        popupWin.close();
       } catch (e) {
         // Ignore errors
       }

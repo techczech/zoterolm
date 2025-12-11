@@ -3,8 +3,21 @@
  */
 
 import { getPref, setPref } from "../../utils/prefs";
+import { escapeHtml } from "../../utils/html";
 
 export const PROMPT_TAG = "#zoterolm-prompt";
+
+/**
+ * Item metadata interface
+ */
+export interface ItemMetadata {
+  title: string;
+  authors: string;
+  year: string;
+  journal: string;
+  abstract: string;
+  tags: string;
+}
 
 export interface PromptTemplate {
   id: string; // Note item ID
@@ -19,15 +32,29 @@ export interface PromptTemplate {
 export const DEFAULT_PROMPTS: Array<{ name: string; content: string }> = [
   {
     name: "Academic Summary",
-    content: `Please provide a comprehensive academic summary of the following document. Include:
+    content: `# Academic Summary
 
-1. **Main Thesis/Argument**: What is the central claim or purpose of this work?
-2. **Key Findings**: What are the most important results or conclusions?
-3. **Methodology**: What approach or methods were used?
-4. **Significance**: Why is this work important in its field?
-5. **Limitations**: What are the acknowledged limitations or gaps?
+Please provide a comprehensive academic summary of the following document. Complete this template. Support every claim with exact quotes from the text.
 
-Keep the summary concise but thorough, around 300-500 words.
+## 1. Main Thesis/Argument:
+
+What is the central claim or purpose of this work?
+
+## 2. Key findings:
+
+What are the most important results or conclusions?
+
+## 3. Methodology:
+
+What approach or methods were used? Mention details of models used, dates and exact population numbers.
+
+## 4. Significance:
+
+Why is this work important in its field? What it agrees and what it disagrees on and what does it build on.
+
+## 5. Limitations:
+
+What are the acknowledged limitations or gaps?
 
 {{content}}`,
   },
@@ -39,6 +66,7 @@ Keep the summary concise but thorough, around 300-500 words.
 - Important findings or data
 - Notable conclusions
 - Practical implications
+- Possible limitations
 
 Format as clear, concise bullet points.
 
@@ -46,24 +74,55 @@ Format as clear, concise bullet points.
   },
   {
     name: "Critical Analysis",
-    content: `Provide a critical analysis of the following document. Consider:
+    content: `# Critical Analysis
 
-1. **Strengths**: What does this work do well?
-2. **Weaknesses**: What are the limitations or problematic aspects?
-3. **Evidence Quality**: How well-supported are the claims?
-4. **Contribution**: What does this add to the field?
-5. **Questions**: What questions remain unanswered?
+Provide a critical analysis of the following document.
+
+Write your own critique of the methods and conclusion. Base it on the best knowledge and practices as a critical reviewer. Adopt the persona of a well known researcher in the field. For example, for statistical methods use the persona of Andrew Gelman, for analysis of conclusions use Scott Alexander, for linguistic issues use Mark Liberman.
+
+Consider:
+
+## 1. Formulation of the problem:
+
+Is this dealing a well formulated problem in a way that represents the problem space and is addresable by research.
+
+## 2. Methods  
+
+Is it using appropriate methodology.
+
+## 3. Evidence Quality:
+
+How well-supported are the claims?
+
+## 4. Literature review quality
+
+How well is the relevant literature in the field identified.
+
+##  5. Conclusion evaluation:
+
+How much are the conclusions and general discussion warranted based on the strength of the evidence.
 
 {{content}}`,
   },
   {
     name: "Literature Review Helper",
-    content: `Analyze this document for use in a literature review. Provide:
+    content: `Analyze this document for use in a literature review.  Provide:
 
-1. **Citation-worthy claims**: Key statements that could be cited
-2. **Theoretical framework**: What theories or frameworks are used?
-3. **Research gaps identified**: What gaps does this work identify?
-4. **Connections**: How might this relate to other works in the field?
+## 1. Citation-worthy claims:
+
+Key statements that could be cited
+
+## 2. Theoretical framework:
+
+What theories or frameworks are used?
+
+## 3. Research gaps identified:
+
+What gaps does this work identify?
+
+## 4. Connections:
+
+How might this relate to other works in the field?
 
 {{content}}`,
   },
@@ -80,6 +139,65 @@ Format as clear, concise bullet points.
 The summaries are:
 
 {{content}}`,
+  },
+  {
+    name: "Academic Summary with Metadata",
+    content: `Please provide a comprehensive academic summary of the following document.
+
+**Document Information:**
+- Title: {{title}}
+- Authors: {{authors}}
+- Year: {{year}}
+- Journal: {{journal}}
+- Tags: {{tags}}
+
+**Content:**
+{{content}}
+
+Include:
+1. **Main Thesis/Argument**: What is the central claim or purpose of this work?
+2. **Key Findings**: What are the most important results or conclusions?
+3. **Methodology**: What approach or methods were used?
+4. **Significance**: Why is this work important in its field?
+5. **Limitations**: What are the acknowledged limitations or gaps?
+
+Keep the summary concise but thorough, around 300-500 words.`,
+  },
+  {
+    name: "Annotated Summary",
+    content: `Create a summary that incorporates both the document content and user annotations.
+
+**Document:** {{title}} ({{authors}}, {{year}})
+
+**Document Content:**
+{{content}}
+
+Focus on synthesizing the main ideas with the highlighted and annotated sections to provide a comprehensive overview. Pay special attention to the user annotations as they indicate important or interesting sections.`,
+  },
+  {
+    name: "Research Context Summary",
+    content: `Provide a summary of this research paper in the context of its field and time period.
+
+**Publication Details:**
+- Title: {{title}}
+- Authors: {{authors}}
+- Year: {{year}}
+- Journal: {{journal}}
+- Tags/Keywords: {{tags}}
+
+**Abstract:**
+{{abstract}}
+
+**Full Content:**
+{{content}}
+
+Summarize the paper's contributions, methodology, and findings while considering:
+1. How this work fits into the broader field
+2. What problems it addresses
+3. How it advances knowledge from previous work
+4. Its impact and relevance today
+
+Structure the summary to be useful for researchers wanting to quickly understand this paper's place in the literature.`,
   },
 ];
 
@@ -231,10 +349,79 @@ export async function createDefaultPrompts(): Promise<void> {
 }
 
 /**
- * Apply a prompt template to content
+ * Extract metadata from a Zotero item
  */
-export function applyPrompt(prompt: PromptTemplate, content: string): string {
-  return prompt.content.replace(/\{\{content\}\}/g, content);
+export function extractItemMetadata(item: Zotero.Item): ItemMetadata {
+  return {
+    title: item.getDisplayTitle(),
+    authors: item
+      .getCreators()
+      .map((c) => `${c.firstName} ${c.lastName}`)
+      .join(", "),
+    year: extractYearFromDate(item.getField("date") as string),
+    journal:
+      (item.getField("publicationTitle") as string) ||
+      (item.getField("journalAbbreviation") as string) ||
+      "",
+    abstract: (item.getField("abstractNote") as string) || "",
+    tags: item
+      .getTags()
+      .map((t) => t.tag)
+      .join(", "),
+  };
+}
+
+/**
+ * Extract year from date field
+ */
+function extractYearFromDate(dateString: string): string {
+  if (!dateString) return "";
+  const match = dateString.match(/\b(19|20)\d{2}\b/);
+  return match ? match[0] : "";
+}
+
+/**
+ * Apply a prompt template to content with optional metadata
+ */
+export function applyPrompt(
+  prompt: PromptTemplate,
+  content: string,
+  metadata?: ItemMetadata,
+): string {
+  let processedPrompt = prompt.content;
+
+  // Replace content placeholder
+  processedPrompt = processedPrompt.replace(/\{\{content\}\}/g, content);
+
+  // Replace metadata placeholders if metadata provided
+  if (metadata) {
+    processedPrompt = processedPrompt.replace(
+      /\{\{title\}\}/g,
+      metadata.title || "",
+    );
+    processedPrompt = processedPrompt.replace(
+      /\{\{authors\}\}/g,
+      metadata.authors || "",
+    );
+    processedPrompt = processedPrompt.replace(
+      /\{\{year\}\}/g,
+      metadata.year || "",
+    );
+    processedPrompt = processedPrompt.replace(
+      /\{\{journal\}\}/g,
+      metadata.journal || "",
+    );
+    processedPrompt = processedPrompt.replace(
+      /\{\{abstract\}\}/g,
+      metadata.abstract || "",
+    );
+    processedPrompt = processedPrompt.replace(
+      /\{\{tags\}\}/g,
+      metadata.tags || "",
+    );
+  }
+
+  return processedPrompt;
 }
 
 /**
@@ -248,16 +435,4 @@ export async function deletePrompt(promptId: string): Promise<void> {
   if (note) {
     await note.eraseTx();
   }
-}
-
-/**
- * Escape HTML special characters
- */
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
 }

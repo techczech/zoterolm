@@ -2,6 +2,8 @@
  * Summary storage and retrieval as child notes
  */
 
+import { escapeHtml } from "../../utils/html";
+
 export const SUMMARY_TAG = "#zoterolm-summary";
 
 export interface SummaryMetadata {
@@ -37,6 +39,8 @@ export async function createSummary(
 
   // Add the summary tag
   note.addTag(SUMMARY_TAG);
+  // Add the model as a tag
+  note.addTag(metadata.model);
   await note.saveTx();
 
   return {
@@ -55,7 +59,12 @@ function formatSummaryAsHtml(
   content: string,
   metadata: SummaryMetadata,
 ): string {
-  const metaHeader = `<div style="background: #f0f0f0; padding: 8px; margin-bottom: 12px; border-radius: 4px; font-size: 0.9em;">
+  // Create the note title
+  const date = new Date(metadata.date);
+  const formattedDate = formatDateForDisplay(date);
+  const noteTitle = `Academic Summary - ${formattedDate} (ZoteroLM - ${metadata.model})`;
+
+  const metaHeader = `<div id="zoterolm-summary-meta" data-zoterolm="summary-meta" style="background: #f0f0f0; padding: 8px; margin-bottom: 12px; border-radius: 4px; font-size: 0.9em;">
 <strong>ZoteroLM Summary</strong><br>
 Model: ${escapeHtml(metadata.model)}<br>
 Prompt: ${escapeHtml(metadata.prompt)}<br>
@@ -67,7 +76,7 @@ Type: ${escapeHtml(metadata.type)}${metadata.question ? `<br>Question: ${escapeH
     .replace(/\n\n/g, "</p><p>")
     .replace(/\n/g, "<br>");
 
-  return `${metaHeader}<p>${formattedContent}</p>`;
+  return `<h1>${escapeHtml(noteTitle)}</h1>${metaHeader}<div id="zoterolm-summary-body" data-zoterolm="summary-body"><p>${formattedContent}</p></div>`;
 }
 
 /**
@@ -130,11 +139,18 @@ function extractMetadata(html: string): SummaryMetadata {
     type: "item",
   };
 
-  const modelMatch = html.match(/Model:\s*([^<\n]+)/);
-  const promptMatch = html.match(/Prompt:\s*([^<\n]+)/);
-  const dateMatch = html.match(/Date:\s*([^<\n]+)/);
-  const typeMatch = html.match(/Type:\s*([^<\n]+)/);
-  const questionMatch = html.match(/Question:\s*([^<\n]+)/);
+  // Prefer a stable metadata container if present; fall back to whole HTML
+  // for older notes.
+  const metaMatch = html.match(
+    /<div[^>]*id="zoterolm-summary-meta"[^>]*>[\s\S]*?<\/div>/,
+  );
+  const metaSource = metaMatch ? metaMatch[0] : html;
+
+  const modelMatch = metaSource.match(/Model:\s*([^<\n]+)/);
+  const promptMatch = metaSource.match(/Prompt:\s*([^<\n]+)/);
+  const dateMatch = metaSource.match(/Date:\s*([^<\n]+)/);
+  const typeMatch = metaSource.match(/Type:\s*([^<\n]+)/);
+  const questionMatch = metaSource.match(/Question:\s*([^<\n]+)/);
 
   return {
     model: modelMatch ? modelMatch[1].trim() : defaults.model,
@@ -151,14 +167,27 @@ function extractMetadata(html: string): SummaryMetadata {
  * Extract content from summary note HTML (after metadata div)
  */
 function extractContent(html: string): string {
-  // Remove the metadata div
-  const withoutMeta = html.replace(
+  // Prefer a stable body container if present; fall back to heuristics for
+  // older notes.
+  const bodyMatch = html.match(
+    /<div[^>]*id="zoterolm-summary-body"[^>]*>([\s\S]*?)<\/div>/,
+  );
+
+  let bodyHtml = bodyMatch ? bodyMatch[1] : html;
+
+  // Strip metadata and title (older notes may not have stable markers)
+  bodyHtml = bodyHtml.replace(
+    /<div[^>]*id="zoterolm-summary-meta"[^>]*>[\s\S]*?<\/div>/,
+    "",
+  );
+  bodyHtml = bodyHtml.replace(
     /<div[^>]*style="background:[^"]*"[^>]*>[\s\S]*?<\/div>/,
     "",
   );
+  bodyHtml = bodyHtml.replace(/<h1[^>]*>[\s\S]*?<\/h1>/, "");
 
   // Convert HTML to plain text
-  return withoutMeta
+  return bodyHtml
     .replace(/<\/p><p>/g, "\n\n")
     .replace(/<br\s*\/?>/g, "\n")
     .replace(/<[^>]*>/g, "")
@@ -238,13 +267,12 @@ export function formatSummariesForMetaSummary(summaries: Summary[]): string {
 }
 
 /**
- * Escape HTML special characters
+ * Format date for display (e.g., "15 Nov 2025")
  */
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+function formatDateForDisplay(date: Date): string {
+  return date.toLocaleDateString('en-US', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  });
 }

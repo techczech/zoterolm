@@ -236,3 +236,4 @@ export function getProgressTracker(): ProgressTracker {
 export function createProgressTracker(): ProgressTracker {
   return new ProgressTracker();
 }
+
