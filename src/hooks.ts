@@ -30,6 +30,13 @@ import {
   viewFullSummary,
 } from "./modules/actions";
 import { createDefaultPrompts } from "./modules/prompts/manager";
+import {
+  deleteSelectedPrompt,
+  duplicateSelectedPrompt,
+  newPrompt,
+  openSelectedPrompt,
+  refreshPrompts,
+} from "./modules/preferenceScript";
 
 async function onStartup() {
   await Promise.all([
@@ -174,6 +181,21 @@ async function onPrefsEvent(type: string, data: { [key: string]: any }) {
           type: "success",
         })
         .show();
+      break;
+    case "openPrompt":
+      openSelectedPrompt(data.window);
+      break;
+    case "newPrompt":
+      await newPrompt(data.window);
+      break;
+    case "duplicatePrompt":
+      await duplicateSelectedPrompt(data.window);
+      break;
+    case "deletePrompt":
+      await deleteSelectedPrompt(data.window);
+      break;
+    case "refreshPrompts":
+      refreshPrompts(data.window);
       break;
     case "testGemini":
       await testGeminiConnection(data.window);

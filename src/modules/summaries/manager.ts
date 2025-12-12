@@ -3,6 +3,7 @@
  */
 
 import { escapeHtml } from "../../utils/html";
+import { renderMarkdownToSafeHtmlFragment } from "../../utils/markdown";
 
 export const SUMMARY_TAG = "#zoterolm-summary";
 
@@ -62,7 +63,8 @@ function formatSummaryAsHtml(
   // Create the note title
   const date = new Date(metadata.date);
   const formattedDate = formatDateForDisplay(date);
-  const noteTitle = `Academic Summary - ${formattedDate} (ZoteroLM - ${metadata.model})`;
+  const promptTitle = metadata.prompt?.trim() || "Academic Summary";
+  const noteTitle = `${promptTitle} - ${formattedDate} (ZoteroLM - ${metadata.model})`;
 
   const metaHeader = `<div id="zoterolm-summary-meta" data-zoterolm="summary-meta" style="background: #f0f0f0; padding: 8px; margin-bottom: 12px; border-radius: 4px; font-size: 0.9em;">
 <strong>ZoteroLM Summary</strong><br>
@@ -72,11 +74,9 @@ Date: ${escapeHtml(metadata.date)}<br>
 Type: ${escapeHtml(metadata.type)}${metadata.question ? `<br>Question: ${escapeHtml(metadata.question)}` : ""}
 </div>`;
 
-  const formattedContent = escapeHtml(content)
-    .replace(/\n\n/g, "</p><p>")
-    .replace(/\n/g, "<br>");
+  const bodyHtml = renderMarkdownToSafeHtmlFragment(content);
 
-  return `<h1>${escapeHtml(noteTitle)}</h1>${metaHeader}<div id="zoterolm-summary-body" data-zoterolm="summary-body"><p>${formattedContent}</p></div>`;
+  return `<h1>${escapeHtml(noteTitle)}</h1>${metaHeader}<div id="zoterolm-summary-body" data-zoterolm="summary-body">${bodyHtml}</div>`;
 }
 
 /**
