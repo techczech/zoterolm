@@ -1,12 +1,17 @@
 # ZoteroLM
 
-A Zotero 7 plugin that enables LLM-powered summarization of your library items using Google Gemini or OpenAI.
+A Zotero 8 (beta) plugin that enables LLM-powered summarization of your library items using Google Gemini or OpenAI.
+
+> Note: ZoteroLM currently targets Zotero 8’s UI/runtime (Firefox 115+). Zotero 7 is not the primary target.
 
 ## Features
 
 - **PDF Summarization**: Extract text from PDF attachments and generate summaries using LLMs
+- **Markdown-rendered notes**: Summaries are saved as notes with rendered Markdown (headings, bold/italic, lists, code)
 - **Multiple LLM Providers**: Support for Google Gemini and OpenAI models
-- **Customizable Prompts**: Create and manage prompt templates stored as Zotero notes
+- **Customizable prompts**: Create and manage prompt templates stored as Zotero notes
+- **Prompt management UI**: Create/open/duplicate/delete prompts from Settings and the toolbar menu
+- **Per-run prompt selection**: The “Summarize with LLM” dialog uses the prompt you select for that run
 - **Collection Summaries**: Generate meta-summaries from existing item summaries
 - **Question Answering**: Ask questions about your documents
 - **Context Window Management**: Automatic fitting of content to model context limits
@@ -27,6 +32,10 @@ A Zotero 7 plugin that enables LLM-powered summarization of your library items u
 2. In Zotero, go to Tools → Add-ons
 3. Click the gear icon and select "Install Add-on From File..."
 4. Select the downloaded `.xpi` file
+
+### Zotero version
+
+- **Recommended**: Zotero 8 (beta)
 
 ## Configuration
 
@@ -66,9 +75,8 @@ Note: Items must have existing summaries before generating a collection summary.
 
 Prompts are stored as standalone Zotero notes with the tag `#zoterolm-prompt`.
 
-- The first line of the note is the prompt name
-- The rest is the prompt template
 - Use `{{content}}` as a placeholder for the document text
+- You can manage prompts in **Zotero Preferences → ZoteroLM** or via the **toolbar menu**
 
 Default prompts are created automatically on first use. You can edit or create new prompts directly in Zotero.
 
