@@ -4,110 +4,73 @@
 <vbox onload="Zotero.__addonInstance__.hooks.onPrefsEvent('load', { window });">
   <!-- API Configuration Section -->
   <groupbox>
-    <label><html:h2 data-l10n-id="pref-section-api"></html:h2></label>
+    <label>
+      <html:h2 data-l10n-id="pref-section-api"></html:h2>
+    </label>
 
     <!-- Gemini Configuration -->
-    <vbox
-      style="
+    <vbox style="
         margin-bottom: 12px;
         padding: 8px;
         background: #f5f5f5;
         border-radius: 4px;
-      "
-    >
+      ">
       <html:h3 style="margin: 0 0 8px 0">Google Gemini</html:h3>
       <hbox align="center" style="margin-bottom: 8px">
-        <html:label
-          for="zotero-prefpane-__addonRef__-gemini-key"
-          style="width: 100px"
-          >API Key:</html:label
-        >
-        <html:input
-          type="password"
-          id="zotero-prefpane-__addonRef__-gemini-key"
-          preference="geminiApiKey"
-          style="flex: 1; margin-right: 8px"
-        />
-        <button
-          id="zotero-prefpane-__addonRef__-test-gemini"
-          label="Test &amp; Fetch Models"
-          oncommand="Zotero.__addonInstance__.hooks.onPrefsEvent('testGemini', { window });"
-        />
+        <html:label for="zotero-prefpane-__addonRef__-gemini-key" style="width: 100px">API Key:</html:label>
+        <html:input type="password" id="zotero-prefpane-__addonRef__-gemini-key" preference="geminiApiKey"
+          style="flex: 1; margin-right: 8px" />
+        <button id="zotero-prefpane-__addonRef__-test-gemini" label="Test &amp; Fetch Models"
+          oncommand="Zotero.__addonInstance__.hooks.onPrefsEvent('testGemini', { window });" />
       </hbox>
-      <html:div
-        id="zotero-prefpane-__addonRef__-gemini-status"
-        style="font-size: 0.9em; color: #666"
-      ></html:div>
+      <html:div id="zotero-prefpane-__addonRef__-gemini-status" style="font-size: 0.9em; color: #666"></html:div>
     </vbox>
 
     <!-- OpenAI Configuration -->
-    <vbox
-      style="
+    <vbox style="
         margin-bottom: 12px;
         padding: 8px;
         background: #f5f5f5;
         border-radius: 4px;
-      "
-    >
+      ">
       <html:h3 style="margin: 0 0 8px 0">OpenAI</html:h3>
       <hbox align="center" style="margin-bottom: 8px">
-        <html:label
-          for="zotero-prefpane-__addonRef__-openai-key"
-          style="width: 100px"
-          >API Key:</html:label
-        >
-        <html:input
-          type="password"
-          id="zotero-prefpane-__addonRef__-openai-key"
-          preference="openaiApiKey"
-          style="flex: 1; margin-right: 8px"
-        />
-        <button
-          id="zotero-prefpane-__addonRef__-test-openai"
-          label="Test &amp; Fetch Models"
-          oncommand="Zotero.__addonInstance__.hooks.onPrefsEvent('testOpenAI', { window });"
-        />
+        <html:label for="zotero-prefpane-__addonRef__-openai-key" style="width: 100px">API Key:</html:label>
+        <html:input type="password" id="zotero-prefpane-__addonRef__-openai-key" preference="openaiApiKey"
+          style="flex: 1; margin-right: 8px" />
+        <button id="zotero-prefpane-__addonRef__-test-openai" label="Test &amp; Fetch Models"
+          oncommand="Zotero.__addonInstance__.hooks.onPrefsEvent('testOpenAI', { window });" />
       </hbox>
-      <html:div
-        id="zotero-prefpane-__addonRef__-openai-status"
-        style="font-size: 0.9em; color: #666"
-      ></html:div>
+      <html:div id="zotero-prefpane-__addonRef__-openai-status" style="font-size: 0.9em; color: #666"></html:div>
     </vbox>
   </groupbox>
 
   <!-- Model Selection Section -->
   <groupbox>
-    <label><html:h2>Model Selection</html:h2></label>
+    <label>
+      <html:h2>Model Selection</html:h2>
+    </label>
     <html:p style="font-size: 0.9em; color: #666; margin-bottom: 8px">
       Select which models to show in the runtime selection. Click "Test &amp;
       Fetch Models" above to refresh the list.
     </html:p>
 
     <hbox align="center" style="margin-bottom: 8px">
-      <html:label for="zotero-prefpane-__addonRef__-model" style="width: 120px"
-        >Default Model:</html:label
-      >
-      <menulist
-        id="zotero-prefpane-__addonRef__-model"
-        preference="defaultModel"
-        style="flex: 1"
-      >
+      <html:label for="zotero-prefpane-__addonRef__-model" style="width: 120px">Default Model:</html:label>
+      <menulist id="zotero-prefpane-__addonRef__-model" preference="defaultModel" style="flex: 1">
         <menupopup id="zotero-prefpane-__addonRef__-model-popup">
           <!-- Models populated dynamically -->
         </menupopup>
       </menulist>
     </hbox>
 
-    <vbox
-      id="zotero-prefpane-__addonRef__-model-list"
-      style="
+    <vbox id="zotero-prefpane-__addonRef__-model-list" style="
         max-height: 200px;
         overflow-y: auto;
         border: 1px solid #ddd;
         padding: 8px;
         border-radius: 4px;
-      "
-    >
+      ">
       <!-- Model checkboxes populated dynamically -->
       <html:em>No models loaded. Test your API connection above.</html:em>
     </vbox>
@@ -115,61 +78,57 @@
 
   <!-- Context Settings Section -->
   <groupbox>
-    <label><html:h2 data-l10n-id="pref-section-context"></html:h2></label>
+    <label>
+      <html:h2 data-l10n-id="pref-section-context"></html:h2>
+    </label>
 
     <hbox align="center">
-      <html:label
-        for="zotero-prefpane-__addonRef__-max-tokens"
-        data-l10n-id="pref-max-tokens"
-        style="width: 150px"
-      ></html:label>
-      <html:input
-        type="number"
-        id="zotero-prefpane-__addonRef__-max-tokens"
-        preference="maxContextTokens"
-        min="1000"
-        max="2000000"
-        step="1000"
-        style="width: 120px"
-      />
+      <html:label for="zotero-prefpane-__addonRef__-max-tokens" data-l10n-id="pref-max-tokens" style="width: 150px">
+      </html:label>
+      <html:input type="number" id="zotero-prefpane-__addonRef__-max-tokens" preference="maxContextTokens" min="1000"
+        max="2000000" step="1000" style="width: 120px" />
       <html:span style="margin-left: 8px; color: #666">tokens</html:span>
     </hbox>
   </groupbox>
 
   <!-- Prompt Settings Section -->
   <groupbox>
-    <label><html:h2 data-l10n-id="pref-section-prompts"></html:h2></label>
+    <label>
+      <html:h2 data-l10n-id="pref-section-prompts"></html:h2>
+    </label>
 
     <hbox align="center" style="margin-bottom: 8px">
-      <html:label
-        for="zotero-prefpane-__addonRef__-default-prompt"
-        data-l10n-id="pref-default-prompt"
-        style="width: 120px"
-      ></html:label>
-      <menulist
-        id="zotero-prefpane-__addonRef__-default-prompt"
-        preference="defaultPromptId"
-        style="flex: 1"
-      >
+      <html:label for="zotero-prefpane-__addonRef__-default-prompt" data-l10n-id="pref-default-prompt"
+        style="width: 120px"></html:label>
+      <menulist id="zotero-prefpane-__addonRef__-default-prompt" preference="defaultPromptId" style="flex: 1">
         <menupopup id="zotero-prefpane-__addonRef__-prompt-popup">
           <!-- Prompts populated dynamically -->
         </menupopup>
       </menulist>
     </hbox>
 
+    <hbox style="gap: 6px; margin-bottom: 8px">
+      <button id="zotero-prefpane-__addonRef__-prompt-open" label="Open" title="Open selected prompt note"
+        oncommand="Zotero.__addonInstance__.hooks.onPrefsEvent('openPrompt', { window });" />
+      <button id="zotero-prefpane-__addonRef__-prompt-new" label="New" title="Create a new prompt"
+        oncommand="Zotero.__addonInstance__.hooks.onPrefsEvent('newPrompt', { window });" />
+      <button id="zotero-prefpane-__addonRef__-prompt-duplicate" label="Duplicate" title="Duplicate selected prompt"
+        oncommand="Zotero.__addonInstance__.hooks.onPrefsEvent('duplicatePrompt', { window });" />
+      <button id="zotero-prefpane-__addonRef__-prompt-delete" label="Delete" title="Delete selected prompt"
+        oncommand="Zotero.__addonInstance__.hooks.onPrefsEvent('deletePrompt', { window });" />
+      <button id="zotero-prefpane-__addonRef__-prompt-refresh" label="Refresh" title="Reload prompt list"
+        oncommand="Zotero.__addonInstance__.hooks.onPrefsEvent('refreshPrompts', { window });" />
+    </hbox>
+
     <hbox>
-      <button
-        id="zotero-prefpane-__addonRef__-create-prompts"
-        label="Create Default Prompts"
-        oncommand="Zotero.__addonInstance__.hooks.onPrefsEvent('createDefaultPrompts', { window });"
-      />
+      <button id="zotero-prefpane-__addonRef__-create-prompts" label="Create Default Prompts"
+        title="Create the built-in default prompts"
+        oncommand="Zotero.__addonInstance__.hooks.onPrefsEvent('createDefaultPrompts', { window });" />
     </hbox>
   </groupbox>
 </vbox>
 <vbox>
-  <html:label
-    data-l10n-id="pref-help"
+  <html:label data-l10n-id="pref-help"
     data-l10n-args='{"time": "__buildTime__","name": "__addonName__","version":"__buildVersion__"}'
-    style="font-size: 0.85em; color: #888; margin-top: 12px"
-  ></html:label>
+    style="font-size: 0.85em; color: #888; margin-top: 12px"></html:label>
 </vbox>

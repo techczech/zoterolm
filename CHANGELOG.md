@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2025-12-12
+
+### Fixed
+
+- **Markdown rendering in notes**: Summary notes now render Markdown (headings, bold/italic, lists, code blocks) instead of showing raw Markdown.
+- **Prompt selection**: The “Summarize with LLM” dialog now reliably uses the prompt you select.
+- **Summary note titles**: Summary note titles now reflect the selected prompt name.
+
+### Added
+
+- **Prompt management**: CRUD prompt actions in Settings and toolbar; prompts stored with stable HTML markers for more robust parsing.
+
 ## [0.2.1] - 2025-12-11
 
 ### Fixed
@@ -56,6 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Notes stored as child items of library entries
 - Batch processing support for multiple items
 
+[0.3.0]: https://github.com/techczech/zoterolm/releases/tag/v0.3.0
 [0.2.1]: https://github.com/techczech/zoterolm/releases/tag/v0.2.1
 [0.2.0]: https://github.com/techczech/zoterolm/releases/tag/v0.2.0
 [0.1.0]: https://github.com/techczech/zoterolm/releases/tag/v0.1.0

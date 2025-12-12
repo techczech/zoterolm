@@ -6,6 +6,8 @@ import { getPref, setPref } from "../../utils/prefs";
 import { escapeHtml } from "../../utils/html";
 
 export const PROMPT_TAG = "#zoterolm-prompt";
+const PROMPT_NAME_MARKER = 'data-zoterolm="prompt-name"';
+const PROMPT_BODY_MARKER = 'data-zoterolm="prompt-body"';
 
 /**
  * Item metadata interface
@@ -232,22 +234,58 @@ function parsePromptNote(note: Zotero.Item): PromptTemplate | null {
   const noteContent = note.getNote();
   if (!noteContent) return null;
 
-  // Remove HTML tags for parsing
-  const textContent = noteContent
-    .replace(/<[^>]*>/g, "\n")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&amp;/g, "&")
-    .trim();
+  // Prefer stable markers written by createPrompt(); fall back to older parsing.
+  const hasMarkers =
+    noteContent.includes(PROMPT_NAME_MARKER) &&
+    noteContent.includes(PROMPT_BODY_MARKER);
 
-  const lines = textContent.split("\n").filter((l) => l.trim());
-  if (lines.length === 0) return null;
+  const htmlToText = (html: string): string => {
+    return html
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<\/p>\s*<p[^>]*>/gi, "\n\n")
+      .replace(/<\/div>\s*<div[^>]*>/gi, "\n")
+      .replace(/<[^>]*>/g, "\n")
+      .replace(/&nbsp;/g, " ")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&amp;/g, "&")
+      .replace(/&quot;/g, '"')
+      .replace(/&#039;/g, "'")
+      .trim();
+  };
 
-  // First non-empty line is the name
-  const name = lines[0].trim();
-  // Rest is the content
-  const content = lines.slice(1).join("\n").trim();
+  let name = "";
+  let content = "";
+
+  if (hasMarkers) {
+    const nameMatch = noteContent.match(
+      /<div[^>]*data-zoterolm="prompt-name"[^>]*>([\s\S]*?)<\/div>/i,
+    );
+    const bodyMatch = noteContent.match(
+      /<div[^>]*data-zoterolm="prompt-body"[^>]*>([\s\S]*?)<\/div>/i,
+    );
+
+    if (nameMatch?.[1]) {
+      const nameLines = htmlToText(nameMatch[1])
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean);
+      name = nameLines[0] || "";
+    }
+
+    if (bodyMatch?.[1]) {
+      content = htmlToText(bodyMatch[1]);
+    }
+  }
+
+  if (!name) {
+    // Backwards-compatible parsing: first non-empty line is the name, rest content.
+    const textContent = htmlToText(noteContent);
+    const lines = textContent.split("\n").filter((l) => l.trim());
+    if (lines.length === 0) return null;
+    name = lines[0].trim();
+    content = lines.slice(1).join("\n").trim();
+  }
 
   return {
     id: String(note.id),
@@ -264,12 +302,15 @@ export async function getPromptById(
   promptId: string,
 ): Promise<PromptTemplate | null> {
   const noteId = parseInt(promptId, 10);
-  if (isNaN(noteId)) return null;
+  if (isNaN(noteId)) {
+    return null;
+  }
 
   const note = await Zotero.Items.getAsync(noteId);
   if (!note || !note.isNote()) return null;
 
-  return parsePromptNote(note as Zotero.Item);
+  const parsed = parsePromptNote(note as Zotero.Item);
+  return parsed;
 }
 
 /**
@@ -298,9 +339,9 @@ export async function createPrompt(
   const note = new Zotero.Item("note");
 
   // Format as HTML note
-  const htmlContent = `<div><strong>${escapeHtml(name)}</strong></div>
+  const htmlContent = `<div data-zoterolm="prompt-name"><strong>${escapeHtml(name)}</strong></div>
 <div><br></div>
-<div>${escapeHtml(content).replace(/\n/g, "</div><div>")}</div>`;
+<div data-zoterolm="prompt-body"><pre style="white-space: pre-wrap; font-family: inherit;">${escapeHtml(content)}</pre></div>`;
 
   note.setNote(htmlContent);
   await note.saveTx();
@@ -315,6 +356,17 @@ export async function createPrompt(
     content,
     noteId: note.id,
   };
+}
+
+/**
+ * Duplicate an existing prompt note.
+ */
+export async function duplicatePrompt(
+  promptId: string,
+): Promise<PromptTemplate | null> {
+  const existing = await getPromptById(promptId);
+  if (!existing) return null;
+  return await createPrompt(`${existing.name} (copy)`, existing.content);
 }
 
 /**

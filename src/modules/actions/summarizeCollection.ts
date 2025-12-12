@@ -9,6 +9,7 @@ import { formatSummariesForMetaSummary, getSummariesInCollection } from "../summ
 import { showCollectionSummaryDialog, showError, showSuccess } from "../ui/dialogs";
 import { getProgressTracker } from "../ui/progress";
 import { escapeHtml } from "../../utils/html";
+import { renderMarkdownToSafeHtmlFragment } from "../../utils/markdown";
 
 /**
  * Summarize a collection (meta-summary of existing summaries)
@@ -134,7 +135,7 @@ Prompt: ${escapeHtml(prompt.name)}<br>
 Date: ${new Date().toISOString()}<br>
 Summaries included: ${fitResult.included.length} of ${summaries.length}
 </div>
-<div>${escapeHtml(response.text).replace(/\\n/g, "<br>")}</div>`;
+<div>${renderMarkdownToSafeHtmlFragment(response.text)}</div>`;
 
     note.setNote(htmlContent);
     note.addToCollection(collection.id);

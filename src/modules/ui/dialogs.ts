@@ -5,7 +5,7 @@
  * HTML select elements have rendering issues in Zotero 8's Firefox 115+ engine.
  */
 
-import { getPref } from "../../utils/prefs";
+import { getPref, setPref } from "../../utils/prefs";
 import { getEnabledModels } from "../llm/models";
 import { getAllPrompts, PromptTemplate } from "../prompts/manager";
 import { ContentType } from "../llm/service";
@@ -69,6 +69,7 @@ function populateMenulist(
   selectId: string,
   options: Array<{ value: string; label: string }>,
   selectedValue: string,
+  onChange?: (value: string) => void,
 ): void {
   const container = doc.getElementById(containerId);
   if (!container) {
@@ -76,6 +77,11 @@ function populateMenulist(
   }
 
   ensureCustomDropdownCloseHandler(doc);
+
+  // Ensure we don't accumulate duplicate IDs/stale controls when a dialog is reopened.
+  while (container.firstChild) {
+    container.removeChild(container.firstChild);
+  }
 
   // Create custom dropdown (native select broken by Firefox's SelectParent in XUL context)
   const wrapper = doc.createElementNS(
@@ -140,6 +146,7 @@ function populateMenulist(
       const textSpan = button.querySelector(".selected-text");
       if (textSpan) textSpan.textContent = opt.label;
       dropdown.style.display = "none";
+      onChange?.(opt.value);
       // Update highlight
       dropdown.querySelectorAll(".custom-select-option").forEach((el: any) => {
         el.style.background =
@@ -257,6 +264,13 @@ export async function showSummarizeDialog(): Promise<SummarizeOptions | null> {
     })
     .addButton("Summarize", "confirm", {
       callback: () => {
+        // Capture current dropdown values immediately (some environments don't
+        // reliably run unload callbacks on confirm).
+        try {
+          dialogData.beforeUnloadCallback?.();
+        } catch {
+          // ignore
+        }
         dialogData.confirmed = true;
       },
     })
@@ -274,6 +288,9 @@ export async function showSummarizeDialog(): Promise<SummarizeOptions | null> {
         "model-select",
         modelOptions,
         initialModelId,
+        (value) => {
+          dialogData.modelId = value;
+        },
       );
       populateMenulist(
         doc,
@@ -281,6 +298,9 @@ export async function showSummarizeDialog(): Promise<SummarizeOptions | null> {
         "prompt-select",
         promptOptions,
         initialPromptId,
+        (value) => {
+          dialogData.promptId = value;
+        },
       );
       populateMenulist(
         doc,
@@ -288,6 +308,9 @@ export async function showSummarizeDialog(): Promise<SummarizeOptions | null> {
         "content-select",
         contentOptions,
         initialContentType,
+        (value) => {
+          dialogData.contentType = value;
+        },
       );
     }
   }, 50);
@@ -296,6 +319,11 @@ export async function showSummarizeDialog(): Promise<SummarizeOptions | null> {
 
   if (!dialogData.confirmed) {
     return null;
+  }
+
+  // Persist prompt selection as default for next run / toolbar / prefs.
+  if (dialogData.promptId) {
+    setPref("defaultPromptId", dialogData.promptId);
   }
 
   // Validate content type vs model
@@ -422,6 +450,9 @@ export async function showQuestionDialog(): Promise<QuestionOptions | null> {
         "model-select",
         modelOptions,
         initialModelId,
+        (value) => {
+          dialogData.modelId = value;
+        },
       );
       populateMenulist(
         doc,
@@ -429,6 +460,9 @@ export async function showQuestionDialog(): Promise<QuestionOptions | null> {
         "content-select",
         contentOptions,
         initialContentType,
+        (value) => {
+          dialogData.contentType = value;
+        },
       );
     }
   }, 50);
@@ -642,6 +676,9 @@ export async function showCollectionSummaryDialog(
         "model-select",
         modelOptions,
         initialModelId,
+        (value) => {
+          dialogData.modelId = value;
+        },
       );
       populateMenulist(
         doc,
@@ -649,6 +686,9 @@ export async function showCollectionSummaryDialog(
         "prompt-select",
         promptOptions,
         initialPromptId,
+        (value) => {
+          dialogData.promptId = value;
+        },
       );
     }
   }, 50);

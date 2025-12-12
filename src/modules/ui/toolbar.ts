@@ -8,7 +8,12 @@ import {
   getModelsForProvider,
   LLMProvider,
 } from "../llm/models";
-import { getAllPrompts, PromptTemplate } from "../prompts/manager";
+import {
+  createPrompt,
+  deletePrompt,
+  duplicatePrompt,
+  getAllPrompts,
+} from "../prompts/manager";
 
 /**
  * Register the toolbar button
@@ -176,6 +181,102 @@ async function populateToolbarMenu(
       promptPopup.appendChild(item);
     }
   }
+
+  // Prompt management actions
+  promptPopup.appendChild(ztoolkit.UI.createElement(doc, "menuseparator", {}));
+
+  const openPromptItem = ztoolkit.UI.createElement(doc, "menuitem", {
+    attributes: { label: "Open Selected Prompt" },
+    listeners: [
+      {
+        type: "command",
+        listener: () => {
+          const noteId = parseInt(String(getPref("defaultPromptId") as string), 10);
+          if (isNaN(noteId)) return;
+          const ZoteroPane = ztoolkit.getGlobal("ZoteroPane");
+          ZoteroPane.selectItem(noteId);
+        },
+      },
+    ],
+  });
+  promptPopup.appendChild(openPromptItem);
+
+  const newPromptItem = ztoolkit.UI.createElement(doc, "menuitem", {
+    attributes: { label: "New Prompt" },
+    listeners: [
+      {
+        type: "command",
+        listener: () => {
+          void (async () => {
+            const created = await createPrompt(
+              `Untitled Prompt ${new Date().toISOString()}`,
+              "{{content}}",
+            );
+            setPref("defaultPromptId", created.id);
+            const ZoteroPane = ztoolkit.getGlobal("ZoteroPane");
+            ZoteroPane.selectItem(parseInt(created.id, 10));
+          })();
+        },
+      },
+    ],
+  });
+  promptPopup.appendChild(newPromptItem);
+
+  const duplicatePromptItem = ztoolkit.UI.createElement(doc, "menuitem", {
+    attributes: { label: "Duplicate Selected Prompt" },
+    listeners: [
+      {
+        type: "command",
+        listener: () => {
+          void (async () => {
+            const promptId = String(getPref("defaultPromptId") as string);
+            if (!promptId) return;
+            const created = await duplicatePrompt(promptId);
+            if (!created) return;
+            setPref("defaultPromptId", created.id);
+            const ZoteroPane = ztoolkit.getGlobal("ZoteroPane");
+            ZoteroPane.selectItem(parseInt(created.id, 10));
+          })();
+        },
+      },
+    ],
+  });
+  promptPopup.appendChild(duplicatePromptItem);
+
+  const deletePromptItem = ztoolkit.UI.createElement(doc, "menuitem", {
+    attributes: { label: "Delete Selected Prompt" },
+    listeners: [
+      {
+        type: "command",
+        listener: () => {
+          void (async () => {
+            const promptId = String(getPref("defaultPromptId") as string);
+            if (!promptId) return;
+            await deletePrompt(promptId);
+            const remaining = await getAllPrompts();
+            setPref("defaultPromptId", remaining[0]?.id || "");
+            // Rebuild the toolbar menu to reflect changes.
+            await populateToolbarMenu(doc, menuPopup);
+          })();
+        },
+      },
+    ],
+  });
+  promptPopup.appendChild(deletePromptItem);
+
+  const refreshPromptsItem = ztoolkit.UI.createElement(doc, "menuitem", {
+    attributes: { label: "Refresh Prompts" },
+    listeners: [
+      {
+        type: "command",
+        listener: () => {
+          void populateToolbarMenu(doc, menuPopup);
+        },
+      },
+    ],
+  });
+  promptPopup.appendChild(refreshPromptsItem);
+
   promptMenu.appendChild(promptPopup);
   menuPopup.appendChild(promptMenu);
 

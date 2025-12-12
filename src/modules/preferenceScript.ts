@@ -2,7 +2,7 @@
  * Preference pane script handlers
  */
 
-import { getAllPrompts } from "./prompts/manager";
+import { createPrompt, deletePrompt, duplicatePrompt, getAllPrompts } from "./prompts/manager";
 import { getPref, setPref } from "../utils/prefs";
 import { testConnection } from "./llm/service";
 import {
@@ -18,6 +18,56 @@ export function registerPrefsScripts(win: Window): void {
   populatePromptDropdown(win);
   // Populate model dropdown and list
   populateModelUI(win);
+}
+
+function getSelectedPromptId(win: Window): string {
+  const doc = win.document;
+  const menulist = doc.getElementById(
+    `zotero-prefpane-${addon.data.config.addonRef}-default-prompt`,
+  ) as XUL.MenuList | null;
+  return menulist?.value ? String(menulist.value) : "";
+}
+
+export function openSelectedPrompt(win: Window): void {
+  const promptId = getSelectedPromptId(win);
+  if (!promptId) return;
+  const noteId = parseInt(promptId, 10);
+  if (isNaN(noteId)) return;
+  const ZoteroPane = ztoolkit.getGlobal("ZoteroPane");
+  ZoteroPane.selectItem(noteId);
+}
+
+export async function newPrompt(win: Window): Promise<void> {
+  // Create an empty prompt with minimal body; user can edit in the note.
+  const created = await createPrompt(
+    `Untitled Prompt ${new Date().toISOString()}`,
+    "{{content}}",
+  );
+  setPref("defaultPromptId", created.id);
+  populatePromptDropdown(win);
+  openSelectedPrompt(win);
+}
+
+export async function duplicateSelectedPrompt(win: Window): Promise<void> {
+  const promptId = getSelectedPromptId(win);
+  if (!promptId) return;
+  const created = await duplicatePrompt(promptId);
+  if (!created) return;
+  setPref("defaultPromptId", created.id);
+  populatePromptDropdown(win);
+  openSelectedPrompt(win);
+}
+
+export async function deleteSelectedPrompt(win: Window): Promise<void> {
+  const promptId = getSelectedPromptId(win);
+  if (!promptId) return;
+  await deletePrompt(promptId);
+  // populatePromptDropdown() will resolve the default selection if needed
+  populatePromptDropdown(win);
+}
+
+export function refreshPrompts(win: Window): void {
+  populatePromptDropdown(win);
 }
 
 /**
