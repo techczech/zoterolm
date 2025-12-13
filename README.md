@@ -16,6 +16,21 @@ A Zotero 8 (beta) plugin that enables LLM-powered summarization of your library 
 - **Question Answering**: Ask questions about your documents
 - **Context Window Management**: Automatic fitting of content to model context limits
 
+## 0.4.0-alpha.0 (Zotero 8 beta Reader alpha)
+
+This alpha adds an **in-reader panel** (Reader tab) with early LLM-assisted reading features:
+
+- **Clickable AI Outline / TOC**: Generate a structured outline with page numbers and click to jump
+- **Auto-tag suggestions for highlights/annotations**: Suggest tags, review, and apply/ignore
+- **Ask about selection**: Q&A on the currently selected highlight/annotation (optionally save as note)
+- **Section summaries**: Summarize an outline section (inferred page range) and cache results
+- **Glossary**: Build a term glossary from document text + your annotations; click terms to search in the PDF
+
+Notes:
+- This is **alpha-quality** and targets **Zotero 8 beta**; internal reader APIs may change.
+- Some features use **vision-capable models** by sending the PDF (for outline/section summaries).
+- Cached artifacts are stored as tagged child notes (e.g. `#zoterolm-outline`, `#zoterolm-glossary`).
+
 ## Supported Models
 
 ### Google Gemini
