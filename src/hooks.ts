@@ -22,6 +22,11 @@ import {
   unregisterItemPaneSection,
 } from "./modules/ui/sidebar";
 import {
+  registerReaderPaneSection,
+  unregisterReaderPaneSection,
+} from "./modules/ui/readerPane";
+import { handleAutoTagNotify } from "./modules/reader/autotag";
+import {
   summarizeSelectedItems,
   askQuestionAboutItem,
   regenerateSummary,
@@ -55,6 +60,8 @@ async function onStartup() {
 
   // Register item pane section
   registerItemPaneSection();
+  // Register reader pane section
+  registerReaderPaneSection();
 
   await Promise.all(
     Zotero.getMainWindows().map((win) => onMainWindowLoad(win)),
@@ -111,6 +118,7 @@ async function onMainWindowUnload(win: Window): Promise<void> {
 function onShutdown(): void {
   ztoolkit.unregisterAll();
   unregisterItemPaneSection();
+  unregisterReaderPaneSection();
   addon.data.alive = false;
   // @ts-expect-error - Plugin instance is not typed
   delete Zotero[addon.data.config.addonInstance];
@@ -164,6 +172,8 @@ async function onNotify(
   extraData: { [key: string]: any },
 ) {
   ztoolkit.log("notify", event, type, ids, extraData);
+  // Reader-related automation (currently gated by runtime toggles).
+  await handleAutoTagNotify(event, type, ids);
 }
 
 async function onPrefsEvent(type: string, data: { [key: string]: any }) {
