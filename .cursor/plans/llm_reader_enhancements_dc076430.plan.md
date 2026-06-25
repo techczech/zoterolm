@@ -2,6 +2,7 @@
 name: LLM Reader Enhancements
 overview: Design a Zotero 7 add-on feature set that integrates LLM assistance directly into the built-in PDF reader (AI outline/TOC, highlight auto-tagging, in-reader Q&A, section summaries, glossary index), using Zotero’s existing PDF/annotation data model and this repo’s existing LLM service layer.
 todos: []
+isProject: false
 ---
 
 # LLM-assisted Zotero Reader Enhancements (Zotero 8 beta)
@@ -17,9 +18,9 @@ todos: []
 
 ## What Zotero already gives us (relevant to feasibility)
 
-- **Annotations are accessible from attachments**: this repo already calls `attachment.getAnnotations()` and reads `annotationType`, `annotationText`, `annotationComment`, `annotationPageLabel` (see [`src/modules/pdf/extractor.ts`](src/modules/pdf/extractor.ts)).
-- **Text extraction is available via Zotero internals**: this repo already uses `Zotero.Fulltext` cache + `Zotero.PDFWorker.getFullText()` as fallback (also in [`src/modules/pdf/extractor.ts`](src/modules/pdf/extractor.ts)).
-- **UI injection patterns exist in this repo**: Item pane sections via `Zotero.ItemPaneManager.registerSection()` (see [`src/modules/ui/sidebar.ts`](src/modules/ui/sidebar.ts)), and toolbar/context menus via `ztoolkit` (see [`src/modules/ui/toolbar.ts`](src/modules/ui/toolbar.ts), [`src/modules/ui/menu.ts`](src/modules/ui/menu.ts)).
+- **Annotations are accessible from attachments**: this repo already calls `attachment.getAnnotations()` and reads `annotationType`, `annotationText`, `annotationComment`, `annotationPageLabel` (see `[src/modules/pdf/extractor.ts](src/modules/pdf/extractor.ts)`).
+- **Text extraction is available via Zotero internals**: this repo already uses `Zotero.Fulltext` cache + `Zotero.PDFWorker.getFullText()` as fallback (also in `[src/modules/pdf/extractor.ts](src/modules/pdf/extractor.ts)`).
+- **UI injection patterns exist in this repo**: Item pane sections via `Zotero.ItemPaneManager.registerSection()` (see `[src/modules/ui/sidebar.ts](src/modules/ui/sidebar.ts)`), and toolbar/context menus via `ztoolkit` (see `[src/modules/ui/toolbar.ts](src/modules/ui/toolbar.ts)`, `[src/modules/ui/menu.ts](src/modules/ui/menu.ts)`).
 
 ## Proposed reader improvements (feature design)
 
@@ -91,10 +92,10 @@ todos: []
 - `summarizeSection`
 - `buildGlossary`
 - **Eventing**:
-- Extend notifier registration in [`src/hooks.ts`](src/hooks.ts) to observe annotation-related item changes (Zotero stores annotations as items; we’ll confirm exact event/type filtering).
+- Extend notifier registration in `[src/hooks.ts](src/hooks.ts)` to observe annotation-related item changes (Zotero stores annotations as items; we’ll confirm exact event/type filtering).
 - **Reuse existing LLM plumbing**:
-- Use `callLLM()` in [`src/modules/llm/service.ts`](src/modules/llm/service.ts).
-- Add new prompt templates in [`src/modules/prompts/manager.ts`](src/modules/prompts/manager.ts) for outline/tagging/glossary/Q&A.
+- Use `callLLM()` in `[src/modules/llm/service.ts](src/modules/llm/service.ts)`.
+- Add new prompt templates in `[src/modules/prompts/manager.ts](src/modules/prompts/manager.ts)` for outline/tagging/glossary/Q&A.
 
 ## UX guardrails (important for LLM-in-reader)
 
@@ -110,3 +111,4 @@ todos: []
 - **autotag-v1**: Detect new highlights/annotations and suggest tags with an accept/apply workflow.
 - **reader-qa-v1**: Add reader context-menu Q&A on selection/highlight and display responses in the reader panel.
 - **section-summary-glossary-v1**: Add section summaries and glossary index built from full text + highlights.
+
