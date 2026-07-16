@@ -1,3 +1,14 @@
+---
+name: "ZoteroLM"
+description: "Brings model-assisted summarisation directly into the Zotero research library."
+categories: [desktop-apps, desktop-app, built-by-ai, powered-by-ai]
+updated: 2026-07-16
+deployments:
+  Release:
+    "Latest release": https://github.com/techczech/zoterolm/releases/latest
+  Source:
+    "Project repository": https://github.com/techczech/zoterolm
+---
 # ZoteroLM
 
 A Zotero 8 (beta) plugin that enables LLM-powered summarization of your library items using Google Gemini or OpenAI.
